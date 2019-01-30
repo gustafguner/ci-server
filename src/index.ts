@@ -19,14 +19,7 @@ app.get('/', (req, res) => {
 });
 
 app.post('/ci', (req, res) => {
-  const cloneUrl: string = req.body.repository.clone_url;
-  const commitId: string = req.body.head_commit.id;
-
   console.log('Request body: ', req.body);
-
-  console.log(`Clone URL: ${cloneUrl}`);
-  console.log(`Commit ID: ${commitId}`);
-
   res.status(202);
 });
 
