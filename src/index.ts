@@ -92,30 +92,31 @@ app.post('/ci', async (req, res) => {
   const testCommand = 'java org.junit.runner.JUnitCore';
 
   // Compile
-  await shell.exec(
-    `${compileCommand} ${path.join(__dirname, `../${buildPath}`)}/*.${lang}`,
-    (code, stdout, stderr) => {
-      console.log(`Code: ${code}`);
-      console.log(`stdout: ${stdout}`);
-      console.log(`stderr: ${stderr.length}`);
-    },
-  );
+  await new Promise((resolve, reject) => {
+    shell.exec(
+      `${compileCommand} ${path.join(__dirname, `../${buildPath}`)}/*.${lang}`,
+      (code, stdout, stderr) => {
+        resolve();
+      },
+    );
+  });
 
   console.log('All .java files compiled');
 
   const testResult: string[] = [];
 
+  shell.cd(buildPath);
+  shell.exec('pwd');
+  shell.exec('ls');
+
   testFiles.forEach((file) => {
     console.log(`Execute for: ${file}`);
-    shell.exec(
-      `${testCommand} ${buildPath}/${file}`,
-      (code, stdout, stderr) => {
-        console.log(`Code: ${code}`);
-        console.log(`stdout: ${stdout}`);
-        console.log(`stderr: ${stderr.length}`);
-        testResult.push(stdout);
-      },
-    );
+    shell.exec(`${testCommand} ${file}`, (code, stdout, stderr) => {
+      console.log(`Code: ${code}`);
+      console.log(`stdout: ${stdout}`);
+      console.log(`stderr: ${stderr.length}`);
+      testResult.push(stdout);
+    });
   });
 
   res.status(202);
