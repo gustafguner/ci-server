@@ -10,6 +10,7 @@ import * as glob from 'glob';
 import * as octonode from 'octonode';
 import * as dotenv from 'dotenv';
 dotenv.config();
+import { GithubStatus } from './status';
 import { commands } from './config';
 
 const PORT = 3000;
@@ -38,6 +39,7 @@ app.post('/ci', async (req, res) => {
   const url: string = req.body.repository.clone_url;
   const commitId: string = req.body.head_commit.id;
   const name: string = req.body.repository.name;
+  const fullRepoName: string = req.body.repository.full_name;
   const branchName: string = req.body.ref.substring(11);
 
   const directoryPath = `tmp/${name}/${commitId}`;
@@ -61,27 +63,9 @@ app.post('/ci', async (req, res) => {
     });
   }
 
-  const client = octonode.client(process.env.GITHUB_TOKEN);
-  const ghrepo = client.repo('gustafguner/ci-test-repo');
+  const status = new GithubStatus(fullRepoName, commitId);
 
-  await new Promise((resolve, reject) => {
-    ghrepo.status(
-      commitId,
-      {
-        state: 'pending',
-        description: 'Build pending',
-      },
-      function(err, data, headers) {
-        if (err) {
-          reject();
-        } else {
-          resolve();
-        }
-      },
-    );
-  });
-
-  console.log('status done');
+  await status.pending('Build pending');
 
   const rawData = fs.readFileSync(`${directoryPath}/ci-config.json`, 'utf8');
   const config = JSON.parse(rawData);
@@ -160,7 +144,8 @@ app.post('/ci', async (req, res) => {
     });
   });
 
-  res.status(202).json({ state: 'success' });
+  await status.success('Build success');
+  return res.status(202).json({ state: 'success' });
 });
 
 app.listen(PORT, () => {
