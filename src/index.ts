@@ -2,6 +2,7 @@ import * as express from 'express';
 import * as bodyParser from 'body-parser';
 import * as cors from 'cors';
 import * as morgan from 'morgan';
+import * as nodegit from 'nodegit';
 
 const PORT = 3000;
 
@@ -18,8 +19,26 @@ app.get('/', (req, res) => {
   res.json({ success: true });
 });
 
-app.post('/ci', (req, res) => {
-  console.log('Request body: ', req.body);
+app.post('/ci', async (req, res) => {
+  const url: string = req.body.repository.clone_url;
+  const commitId: string = req.body.head_commit.id;
+  const name: string = req.body.repository.name;
+  const branchName: string = req.body.ref.substring(11);
+
+  const directoryPath = `./tmp/${name}/${commitId}`;
+
+  // Clone repository
+  await nodegit.Clone.clone(url, directoryPath);
+
+  const repo = await nodegit.Repository.open(directoryPath);
+
+  // Checkout to branch from repository
+  await repo
+    .getBranch(`refs/remotes/origin/${branchName}`)
+    .then((reference) => {
+      return repo.checkoutRef(reference);
+    });
+
   res.status(202);
 });
 
