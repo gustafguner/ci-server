@@ -17,13 +17,6 @@ app.use(bodyParser.json());
 
 app.use(cors());
 
-shell.exec('javac dummy-code/*.java', (code, stdout, stderr) => {
-  console.log(`Code: ${code}`);
-  console.log(`stdout: ${stdout}`);
-  console.log(`stderr: ${stderr.length}`);
-
-});
-
 app.get('/', (req, res) => {
   res.json({ success: true });
 });
@@ -47,6 +40,22 @@ app.post('/ci', async (req, res) => {
     .then((reference) => {
       return repo.checkoutRef(reference);
     });
+
+  const srcPath = 'src';
+  const testPath = 'test';
+
+  const lang = 'java';
+  const command = 'javac';
+
+  // Compile
+  await shell.exec(
+    `${command} ${directoryPath}/${srcPath}/*.${lang}`,
+    (code, stdout, stderr) => {
+      console.log(`Code: ${code}`);
+      console.log(`stdout: ${stdout}`);
+      console.log(`stderr: ${stderr.length}`);
+    },
+  );
 
   res.status(202);
 });
