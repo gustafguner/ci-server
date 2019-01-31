@@ -6,6 +6,7 @@ import * as nodegit from 'nodegit';
 import * as path from 'path';
 import * as shell from 'shelljs';
 import * as fs from 'fs';
+import * as glob from 'glob';
 
 const PORT = 3000;
 
@@ -28,7 +29,7 @@ app.post('/ci', async (req, res) => {
   const name: string = req.body.repository.name;
   const branchName: string = req.body.ref.substring(11);
 
-  const directoryPath = `./tmp/${name}/${commitId}`;
+  const directoryPath = `tmp/${name}/${commitId}`;
 
   // Clone repository
   await nodegit.Clone.clone(url, directoryPath);
@@ -54,15 +55,36 @@ app.post('/ci', async (req, res) => {
   const srcFiles: string[] = [];
   const testFiles: string[] = [];
 
-  fs.readdirSync(srcPath).forEach((file) => {
-    srcFiles.push(file);
-    fs.copyFileSync(`${srcPath}/${file}`, buildPath);
+  await new Promise((resolve, reject) => {
+    glob(`${srcPath}/*.java`, (err, files) => {
+      if (err) {
+        reject();
+      } else {
+        files.forEach((file) => {
+          const fileName = file.split('/').pop();
+          fs.copyFileSync(`${file}`, `${buildPath}/${fileName}`);
+          srcFiles.push(fileName.split('.')[0]);
+        });
+        resolve();
+      }
+    });
   });
 
-  fs.readdirSync(testPath).forEach((file) => {
-    testFiles.push(file);
-    fs.copyFileSync(`${testPath}/${file}`, buildPath);
+  await new Promise((resolve, reject) => {
+    glob(`${testPath}/*.java`, (err, files) => {
+      if (err) {
+        reject();
+      } else {
+        files.forEach((file) => {
+          const fileName = file.split('/').pop();
+          fs.copyFileSync(`${file}`, `${buildPath}/${fileName}`);
+          testFiles.push(fileName.split('.')[0]);
+        });
+        resolve();
+      }
+    });
   });
+
   console.log(`All files moved`);
 
   const lang = 'java';
@@ -71,7 +93,7 @@ app.post('/ci', async (req, res) => {
 
   // Compile
   await shell.exec(
-    `${compileCommand} ${buildPath}/*.${lang}`,
+    `${compileCommand} ${path.join(__dirname, `../${buildPath}`)}/*.${lang}`,
     (code, stdout, stderr) => {
       console.log(`Code: ${code}`);
       console.log(`stdout: ${stdout}`);
