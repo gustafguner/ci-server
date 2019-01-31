@@ -3,6 +3,9 @@ import * as bodyParser from 'body-parser';
 import * as cors from 'cors';
 import * as morgan from 'morgan';
 import * as nodegit from 'nodegit';
+import * as path from 'path';
+
+const { c, cpp, node, python, java } = require('compile-run');
 
 const PORT = 3000;
 
@@ -14,6 +17,22 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 app.use(cors());
+
+java.runFile(
+  `${path.dirname(__dirname)}/dummy-code/Main.java`,
+  {},
+  (err, result) => {
+    if (err) {
+      console.log('Error: ', err);
+    } else {
+      if (result.stderr.length !== 0) {
+        console.log('Compile error');
+      } else {
+        console.log(result.stdout);
+      }
+    }
+  },
+);
 
 app.get('/', (req, res) => {
   res.json({ success: true });
@@ -38,6 +57,15 @@ app.post('/ci', async (req, res) => {
     .then((reference) => {
       return repo.checkoutRef(reference);
     });
+
+  // Providing custom path in java
+  await java.runFile(`./Main.java`, {}, (err, result) => {
+    if (err) {
+      console.log('Error: ', err);
+    } else {
+      console.log('Successs result: ', result);
+    }
+  });
 
   res.status(202);
 });
