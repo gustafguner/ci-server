@@ -5,6 +5,8 @@ import * as morgan from 'morgan';
 import * as nodegit from 'nodegit';
 import * as path from 'path';
 import * as shell from 'shelljs';
+import * as fs from 'fs';
+import * as glob from 'glob';
 
 const PORT = 3000;
 
@@ -27,7 +29,7 @@ app.post('/ci', async (req, res) => {
   const name: string = req.body.repository.name;
   const branchName: string = req.body.ref.substring(11);
 
-  const directoryPath = `./tmp/${name}/${commitId}`;
+  const directoryPath = `tmp/${name}/${commitId}`;
 
   // Clone repository
   await nodegit.Clone.clone(url, directoryPath);
@@ -41,21 +43,81 @@ app.post('/ci', async (req, res) => {
       return repo.checkoutRef(reference);
     });
 
-  const srcPath = 'src';
-  const testPath = 'test';
+  const buildPath = `${directoryPath}/__build__`;
+  const srcPath = `${directoryPath}/src`;
+  const testPath = `${directoryPath}/test`;
+
+  if (!fs.existsSync(buildPath)) {
+    fs.mkdirSync(buildPath);
+  }
+
+  // Keep track of the files' origin
+  const srcFiles: string[] = [];
+  const testFiles: string[] = [];
+
+  await new Promise((resolve, reject) => {
+    glob(`${srcPath}/*.java`, (err, files) => {
+      if (err) {
+        reject();
+      } else {
+        files.forEach((file) => {
+          const fileName = file.split('/').pop();
+          fs.copyFileSync(`${file}`, `${buildPath}/${fileName}`);
+          srcFiles.push(fileName.split('.')[0]);
+        });
+        resolve();
+      }
+    });
+  });
+
+  await new Promise((resolve, reject) => {
+    glob(`${testPath}/*.java`, (err, files) => {
+      if (err) {
+        reject();
+      } else {
+        files.forEach((file) => {
+          const fileName = file.split('/').pop();
+          fs.copyFileSync(`${file}`, `${buildPath}/${fileName}`);
+          testFiles.push(fileName.split('.')[0]);
+        });
+        resolve();
+      }
+    });
+  });
+
+  console.log(`All files moved`);
 
   const lang = 'java';
-  const command = 'javac';
+  const compileCommand = 'javac';
+  const testCommand = 'java org.junit.runner.JUnitCore';
 
   // Compile
-  await shell.exec(
-    `${command} ${directoryPath}/${srcPath}/*.${lang}`,
-    (code, stdout, stderr) => {
+  await new Promise((resolve, reject) => {
+    shell.exec(
+      `${compileCommand} ${path.join(__dirname, `../${buildPath}`)}/*.${lang}`,
+      (code, stdout, stderr) => {
+        resolve();
+      },
+    );
+  });
+
+  console.log('All .java files compiled');
+
+  const testResult: string[] = [];
+
+  shell.cd(buildPath);
+  shell.exec('pwd');
+  shell.exec('ls');
+
+  testFiles.forEach((file) => {
+    console.log(`Execute for: ${file}`);
+    shell.exec(`${testCommand} ${file}`, (code, stdout, stderr) => {
       console.log(`Code: ${code}`);
       console.log(`stdout: ${stdout}`);
       console.log(`stderr: ${stderr.length}`);
-    },
-  );
+      testResult.push(stdout);
+    });
+  });
 
   res.status(202);
 });
