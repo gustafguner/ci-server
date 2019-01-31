@@ -7,6 +7,9 @@ import * as path from 'path';
 import * as shell from 'shelljs';
 import * as fs from 'fs';
 import * as glob from 'glob';
+import * as octonode from 'octonode';
+import * as dotenv from 'dotenv';
+dotenv.config();
 import { commands } from './config';
 
 const PORT = 3000;
@@ -25,6 +28,13 @@ app.get('/', (req, res) => {
 });
 
 app.post('/ci', async (req, res) => {
+  if (!process.env.GITHUB_TOKEN) {
+    console.log(
+      '⚠️  No GitHub token found, please provide one in your .env file.',
+    );
+    return res.status(500).json({ state: 'failure' });
+  }
+
   const url: string = req.body.repository.clone_url;
   const commitId: string = req.body.head_commit.id;
   const name: string = req.body.repository.name;
@@ -45,10 +55,33 @@ app.post('/ci', async (req, res) => {
     });
 
   if (!fs.existsSync(`${directoryPath}/ci-config.json`)) {
-    return res
-      .status(202)
-      .json({ state: 'failure', description: 'Missing config file' });
+    return res.status(202).json({
+      state: 'failure',
+      description: 'Cannot find ci-config.json file',
+    });
   }
+
+  const client = octonode.client(process.env.GITHUB_TOKEN);
+  const ghrepo = client.repo('gustafguner/ci-test-repo');
+
+  await new Promise((resolve, reject) => {
+    ghrepo.status(
+      commitId,
+      {
+        state: 'pending',
+        description: 'Build pending',
+      },
+      function(err, data, headers) {
+        if (err) {
+          reject();
+        } else {
+          resolve();
+        }
+      },
+    );
+  });
+
+  console.log('status done');
 
   const rawData = fs.readFileSync(`${directoryPath}/ci-config.json`, 'utf8');
   const config = JSON.parse(rawData);
@@ -116,8 +149,6 @@ app.post('/ci', async (req, res) => {
   const testResult: string[] = [];
 
   shell.cd(buildPath);
-  shell.exec('pwd');
-  shell.exec('ls');
 
   testFiles.forEach((file) => {
     console.log(`Execute for: ${file}`);
@@ -129,7 +160,7 @@ app.post('/ci', async (req, res) => {
     });
   });
 
-  res.status(202);
+  res.status(202).json({ state: 'success' });
 });
 
 app.listen(PORT, () => {
