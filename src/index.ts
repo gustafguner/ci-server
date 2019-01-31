@@ -42,16 +42,36 @@ app.post('/ci', async (req, res) => {
       return repo.checkoutRef(reference);
     });
 
-  const srcPath = 'src';
+  const buildPath = `${directoryPath}/__build__`;
+  const srcPath = `${directoryPath}/src`;
+  const testPath = `${directoryPath}/test`;
+
+  if (!fs.existsSync(buildPath)) {
+    fs.mkdirSync(buildPath);
+  }
+
+  // Keep track of the files' origin
+  const srcFiles: string[] = [];
+  const testFiles: string[] = [];
+
+  fs.readdirSync(srcPath).forEach((file) => {
+    srcFiles.push(file);
+    fs.copyFileSync(`${srcPath}/${file}`, buildPath);
+  });
+
+  fs.readdirSync(testPath).forEach((file) => {
+    testFiles.push(file);
+    fs.copyFileSync(`${testPath}/${file}`, buildPath);
+  });
+  console.log(`All files moved`);
+
   const lang = 'java';
   const compileCommand = 'javac';
-
-  const testPath = 'test';
   const testCommand = 'java org.junit.runner.JUnitCore';
 
   // Compile
   await shell.exec(
-    `${compileCommand} ${directoryPath}/${srcPath}/*.${lang}`,
+    `${compileCommand} ${buildPath}/*.${lang}`,
     (code, stdout, stderr) => {
       console.log(`Code: ${code}`);
       console.log(`stdout: ${stdout}`);
@@ -59,30 +79,21 @@ app.post('/ci', async (req, res) => {
     },
   );
 
-  // Create dir for compiled test files
-  const testFolder = `${directoryPath}/testFolder`;
+  console.log('All .java files compiled');
 
-  if (!fs.existsSync(testFolder)) {
-    fs.mkdirSync(testFolder);
-  }
-  // Compile test files and store in testFolder
-  await shell.exec(
-    `${compileCommand} ${directoryPath}/${testPath}/*.${lang} ${testFolder}`,
-    (code, stdout, stderr) => {
-      console.log(`Code: ${code}`);
-      console.log(`stdout: ${stdout}`);
-      console.log(`stderr: ${stderr.length}`);
-    },
-  );
+  const testResult: string[] = [];
 
-  // Run test files
-
-  await fs.readdirSync(testFolder).forEach((file) => {
-    shell.exec(`${testCommand} ${file}`, (code, stdout, stderr) => {
-      console.log(`Code: ${code}`);
-      console.log(`stdout: ${stdout}`);
-      console.log(`stderr: ${stderr.length}`);
-    });
+  testFiles.forEach((file) => {
+    console.log(`Execute for: ${file}`);
+    shell.exec(
+      `${testCommand} ${buildPath}/${file}`,
+      (code, stdout, stderr) => {
+        console.log(`Code: ${code}`);
+        console.log(`stdout: ${stdout}`);
+        console.log(`stderr: ${stderr.length}`);
+        testResult.push(stdout);
+      },
+    );
   });
 
   res.status(202);
