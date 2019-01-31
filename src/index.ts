@@ -7,6 +7,7 @@ import * as path from 'path';
 import * as shell from 'shelljs';
 import * as fs from 'fs';
 import * as glob from 'glob';
+import { commands } from './config';
 
 const PORT = 3000;
 
@@ -42,6 +43,15 @@ app.post('/ci', async (req, res) => {
     .then((reference) => {
       return repo.checkoutRef(reference);
     });
+
+  if (!fs.existsSync(`${directoryPath}/ci-config.json`)) {
+    return res
+      .status(202)
+      .json({ state: 'failure', description: 'Missing config file' });
+  }
+
+  const rawData = fs.readFileSync(`${directoryPath}/ci-config.json`, 'utf8');
+  const config = JSON.parse(rawData);
 
   const buildPath = `${directoryPath}/__build__`;
   const srcPath = `${directoryPath}/src`;
