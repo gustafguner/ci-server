@@ -3,6 +3,8 @@ import * as bodyParser from 'body-parser';
 import * as cors from 'cors';
 import * as morgan from 'morgan';
 import * as nodegit from 'nodegit';
+import * as path from 'path';
+import * as shell from 'shelljs';
 
 const PORT = 3000;
 
@@ -14,6 +16,13 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 app.use(cors());
+
+shell.exec('javac dummy-code/*.java', (code, stdout, stderr) => {
+  console.log(`Code: ${code}`);
+  console.log(`stdout: ${stdout}`);
+  console.log(`stderr: ${stderr.length}`);
+
+});
 
 app.get('/', (req, res) => {
   res.json({ success: true });
