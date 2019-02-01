@@ -1,6 +1,6 @@
 # Continuous Integration Server
 
-Implements a small continuous integration (CI) server that supports compilation of commits, execution of automated tests and notification of CI results. 
+Implements a small continuous integration (CI) server that supports compilation of commits, execution of automated tests and notification of CI results.
 
 ## Description
 
@@ -24,7 +24,25 @@ The aim of this project is to is to master the core of continuous integration by
 
 ## How to Run
 
-## Running Tests
+## For Development
+
+### Set up
+
+For the CI-server to gain access to your GitHub account you must generate a Personal Access token. Follow these steps to do so.
+
+* Log in to your GitHub account
+* Go to Settings > Developer Settings > Personal access tokens
+* Click `Generate new token`
+* Write a token description and check the `repo:status` box
+* Click generate token and copy the generated token
+
+Create a file named `.env` located in the repository root folder containing
+
+```shell
+GITHUB_TOKEN="Your-token-goes-here"
+```
+
+### Running Tests
 
 ## Built With
 
