@@ -7,7 +7,8 @@
   "license": "MIT",
   "scripts": {
     "run": "ts-node src/index.ts",
-    "watch": "nodemon --watch 'src/**/*.ts' --ignore 'src/**/*.spec.ts' --exec 'ts-node' src/index.ts"
+    "watch": "nodemon --watch 'src/**/*.ts' --ignore 'src/**/*.spec.ts' --exec 'ts-node' src/index.ts",
+    "lint": "tslint \"src/**/*.{ts,tsx}\""
   },
   "dependencies": {
     "body-parser": "^1.18.3",
@@ -29,8 +30,11 @@
     "@types/nodegit": "^0.24.0",
     "@types/shelljs": "^0.8.2",
     "nodemon": "^1.18.9",
+    "prettier": "^1.16.3",
     "ts-node": "^8.0.2",
     "tslint": "^5.12.1",
+    "tslint-config-prettier": "^1.17.0",
+    "tslint-plugin-prettier": "^2.0.1",
     "typescript": "^3.2.4"
   }
 }

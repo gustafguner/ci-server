@@ -1,15 +1,15 @@
 import * as octonode from 'octonode';
 
 export class GithubStatus {
-  fullRepoName: string;
-  commitId: string;
+  private fullRepoName: string;
+  private commitId: string;
 
   constructor(fullRepoName: string, commitId: string) {
     this.fullRepoName = fullRepoName;
     this.commitId = commitId;
   }
 
-  pending(description: string) {
+  public pending(description: string) {
     return sendGithubStatus(
       'pending',
       description,
@@ -18,7 +18,7 @@ export class GithubStatus {
     );
   }
 
-  success(description: string) {
+  public success(description: string) {
     return sendGithubStatus(
       'success',
       description,
@@ -27,7 +27,7 @@ export class GithubStatus {
     );
   }
 
-  error(description: string) {
+  public error(description: string) {
     return sendGithubStatus(
       'success',
       description,
@@ -36,7 +36,7 @@ export class GithubStatus {
     );
   }
 
-  failure(description: string) {
+  public failure(description: string) {
     return sendGithubStatus(
       'failure',
       description,
@@ -62,7 +62,7 @@ const sendGithubStatus = (
         state,
         description,
       },
-      function(err, data, headers) {
+      (err, data, headers) => {
         if (err) {
           reject();
         } else {
