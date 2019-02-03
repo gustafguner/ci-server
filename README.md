@@ -89,7 +89,7 @@ yarn watch
 ```
 You should get something like this:
 
-![yarn]()
+![yarn](https://github.com/gustafguner/fundamentals-lab2/blob/issue/6/yarn-example.png)
 
 2. Go into the directory that you are working on (not the CI server repository) and type the following command.
 
@@ -97,7 +97,7 @@ You should get something like this:
 
 You should then see something like this:
 
-![ngrok]()
+![ngrok](https://github.com/gustafguner/fundamentals-lab2/blob/issue/6/ngrok-example.png)
 
 3. Copy the URL (it should end with `.io`, e.g. `https://56b3bb3f.io`) and go into the working repository in GitHub.
 
