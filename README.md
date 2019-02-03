@@ -10,15 +10,27 @@ The aim of this project is to master the core of continuous integration by imple
  
 Currently, these are the language(s) that the CI server can compile:
 
-* Java
+* [Java](https://docs.oracle.com/en/java/)
+
+Currently, these are the testing frameworks that the CI server can execute:
+
+* [JUnit](https://junit.org/junit4/)
 
 ### Build Status
 
+Insert Build Status for the system.
+
 ### Compilation
+
+Description of the implementation and unit tests of the CI server's compilation feature.
 
 ### Test Execution
 
+Description of the implementation and unit tests of the CI server's test execution feature.
+
 ### Notification
+
+Description of the implementation and unit tests of the CI server's notification feature.
 
 ## Getting Started
 Please follow the install guides to set up the environment for this system: 
@@ -61,7 +73,10 @@ See section [Built With](#built-with) for more details on the tools.
 
 ## How to Run
 
+Description of how a client would be able to run/use the system.
+
 ## For Development
+This section is aimed for individuals that wish to develop on the CI server itself. The following sections describes how to set up the development environment and how tests on the system can be run. 
 
 ### Set up
 
@@ -91,19 +106,23 @@ You should get something like this:
 
 ![yarn](https://github.com/gustafguner/fundamentals-lab2/blob/issue/6/yarn-example.png)
 
-2. Go into the directory that you are working on (not the CI server repository) and type the following command.
+2. Create or go into a "test" repository that you wish to test the CI server on and type the following command.
 
-`ngrok http 3000`
+```shell
+ngrok http 3000
+```
 
 You should then see something like this:
 
 ![ngrok](https://github.com/gustafguner/fundamentals-lab2/blob/issue/6/ngrok-example.png)
 
-3. Copy the URL (it should end with `.io`, e.g. `https://56b3bb3f.io`) and go into the working repository in GitHub.
+Note that the compilation and test execution on the CI server only works for certain languages and frameworks. See [Description](#description) for more information.
+
+3. Copy the URL (it should end with `.io`, e.g. `https://56b3bb3f.ngrok.io`) and go into the working repository in GitHub.
 
 4. Click on `Settings` > `Webhooks` > `Add webhook`
 
-5. Paste the copied URL in `Payload URL` appended with `\ci` (e.g. `https://56b3bb3f.io/ci`). 
+5. Paste the copied URL in `Payload URL` appended with `/ci` (e.g. `https://56b3bb3f.io/ci`). 
 
 6. In `Content type` choose `application/json`.
 
@@ -112,6 +131,8 @@ You should then see something like this:
 If everything is working correctly then whenever a Pull Request is made to the repository in GitHub, the CI server should be able to compile the code, execute tests and notify the results. 
 
 ### Running Tests
+
+Description of how to run the automated tests on the system.
 
 ## Built With
 
