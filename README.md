@@ -12,7 +12,7 @@ Currently, these are the language(s) that the CI server can compile:
 
 * [Java](https://docs.oracle.com/en/java/)
 
-Currently, these are the testing frameworks that the CI server can execute:
+Currently, these are the testing framework(s) that the CI server can execute:
 
 * [JUnit](https://junit.org/junit4/)
 
@@ -46,19 +46,27 @@ Note that a GitHub account is required for the next steps; how to create an acco
 
 for Linux:
 
-`cd /home/user/my_project`
+```shell
+$ cd /home/user/my_project
+```
 
 for Windows:
 
-`$ cd /c/user/my_project`
+```shell
+$ cd /c/user/my_project
+```
 
 for macOS:
 
-`$ cd /Users/user/my_project`
+```shell
+$ cd /Users/user/my_project
+```
 
 and type: 
 
-`$ git clone https://github.com/gustafguner/fundamentals-lab2.git`
+```shell
+$ git clone https://github.com/gustafguner/fundamentals-lab2.git
+```
 
 There should now be a working copy of the repository available on your local machine.
 
@@ -91,7 +99,7 @@ For the CI-server to gain access to your GitHub account you must generate a Pers
 Create a file named `.env` located in the repository root folder containing
 
 ```shell
-GITHUB_TOKEN="Your-token-goes-here"
+GITHUB_TOKEN="your-token-goes-here"
 ```
 
 Once the environment has been set up and you have a working copy of the system (if not, see [Getting Started](#getting-started)) then follow these steps to start running the system and monitoring changes to the server:
@@ -99,8 +107,8 @@ Once the environment has been set up and you have a working copy of the system (
 1. Go into the CI server directory and start to monitor the changes with the following commands:
 
 ```shell
-yarn
-yarn watch
+$ yarn
+$ yarn watch
 ```
 You should get something like this:
 
@@ -109,7 +117,7 @@ You should get something like this:
 2. Create or go into a "test" repository that you wish to test the CI server on and type the following command.
 
 ```shell
-ngrok http 3000
+$ ngrok http 3000
 ```
 
 You should then see something like this:
@@ -122,7 +130,7 @@ Note that the compilation and test execution on the CI server only works for cer
 
 4. Click on `Settings` > `Webhooks` > `Add webhook`
 
-5. Paste the copied URL in `Payload URL` appended with `/ci` (e.g. `https://56b3bb3f.io/ci`). 
+5. Paste the copied URL in `Payload URL` appended with `/ci` (e.g. `https://56b3bb3f.ngrok.io/ci`). 
 
 6. In `Content type` choose `application/json`.
 
