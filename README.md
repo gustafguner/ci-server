@@ -114,7 +114,7 @@ You should get something like this:
 
 ![yarn](https://github.com/gustafguner/fundamentals-lab2/blob/issue/6/yarn-example.png)
 
-2. Create or go into a "test" repository that you wish to test the CI server on and type the following command.
+2. Create or go into a (test) repository to run the CI server on and type the following command.
 
 ```shell
 $ ngrok http 3000
@@ -126,7 +126,7 @@ You should then see something like this:
 
 Note that the compilation and test execution on the CI server only works for certain languages and frameworks. See [Description](#description) for more information.
 
-3. Copy the URL (it should end with `.io`, e.g. `https://56b3bb3f.ngrok.io`) and go into the working repository in GitHub.
+3. Copy the URL (it should end with `.io`, e.g. `https://56b3bb3f.ngrok.io`) and go into the test repository in GitHub.
 
 4. Click on `Settings` > `Webhooks` > `Add webhook`
 
@@ -136,7 +136,7 @@ Note that the compilation and test execution on the CI server only works for cer
 
 7. Finish by clicking on the `Add webhook` button.
 
-If everything is working correctly then whenever a Pull Request is made to the repository in GitHub, the CI server should be able to compile the code, execute tests and notify the results. 
+If everything is working correctly then whenever a Pull Request is made to the test repository in GitHub, the CI server should be able to compile the code, execute tests and notify the results. 
 
 ### Running Tests
 
