@@ -1,4 +1,10 @@
 const testCode = require('./../src/index.ts');
+const compileCode = require('./../src/index.ts');
+
+// Compile tests before running them
+compileCode("./dummy-code/src/TestMainTrue.java");
+compileCode("./dummy-code/src/TestMainFalse.java");
+
 
 test('Test successfull test', () => {
   var result = testCode("./dummy-code/src/TestMainTrue");
