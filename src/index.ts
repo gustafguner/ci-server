@@ -17,6 +17,14 @@ const PORT = 3000;
 
 const app = express();
 
+//Set up mongoose connection
+var mongoose = require('mongoose');
+var mongoDB = process.env.DATABASE_URI;
+mongoose.connect(mongoDB);
+mongoose.Promise = global.Promise;
+var db = mongoose.connection;
+db.on('error', console.error.bind(console, 'MongoDB connection error:'));
+
 app.use(morgan('dev'));
 
 app.use(bodyParser.urlencoded({ extended: false }));
