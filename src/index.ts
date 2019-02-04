@@ -113,10 +113,10 @@ app.post('/ci', async (req, res) => {
   });
   console.log(`All files moved`);
 
-  await java.compileCode(buildPath);
+  const javaCompileOutput = await java.compileCode(buildPath);
   console.log('Java files compiled');
 
-  await java.testCode(buildPath, testFiles);
+  const javaTestOutput = await java.testCode(buildPath, testFiles);
   console.log('Java tests executed');
 
   await status.success('Build success');

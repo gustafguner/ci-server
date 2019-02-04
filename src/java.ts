@@ -19,12 +19,6 @@ const compileCode = async (path: string) => {
         });
       },
     );
-  }).catch(() => {
-    return {
-      succes: false,
-      type: 'Compilation',
-      message: 'Could not compile code',
-    };
   });
 };
 
@@ -57,12 +51,6 @@ const testCode = async (path: string, testFiles: string[]) => {
       type: 'Test',
       message: `${testResultsOut.length}/${testFiles.length} succeded`,
     });
-  }).catch(() => {
-    return {
-      succes: false,
-      type: 'Test',
-      message: 'Could not run tests',
-    };
   });
 };
 
