@@ -25,6 +25,20 @@ mongoose.Promise = global.Promise;
 var db = mongoose.connection;
 db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 
+var Build = require('./models/build');
+
+var newBuild = new Build ({
+    commit_identifier: "this-is-a-commit-hash",
+    build_date: new Date,
+    build_log: "this-is-a-build-log"
+});
+
+newBuild.save(function(err) {
+  if (err) console.log(err);
+  else console.log('Build successfully saved.');
+  setTimeout(() => process.exit(0), 2000);
+});
+
 app.use(morgan('dev'));
 
 app.use(bodyParser.urlencoded({ extended: false }));
