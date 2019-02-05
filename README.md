@@ -97,6 +97,16 @@ On the root repository of the CI-server there is a file named `.env` in which th
 GITHUB_TOKEN="your-token-goes-here"
 ```
 
+#### Set up database connection
+Create a mongoDB database using [mLab](https://mlab.com/).  Go to `https://mlab.com/databases/<name-of-database>` and copy the mongoDB URI shown at the top of the page. Click on `Users > Add database user` and create a user and password for the database. Edit the `.env` file to include:
+
+```shell
+MONGODB_URL=<url>
+MONGODB_USERNAME=<user>
+MONGODB_PASSWORD=<password>
+```
+where ´url´ is the URI without `<dbuser>:<dbpassword>@`. E.g. `"mongodb://ds055935.mlab.com:55935/example-database"`.
+
 #### Monitor server changes
 To start monitoring changes to the CI-server, please do the following steps:
 
