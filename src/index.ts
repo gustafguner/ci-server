@@ -12,6 +12,8 @@ import * as java from './java';
 import * as mongoose from 'mongoose';
 import to from 'await-to-js';
 
+import Build from './models/build';
+
 mongoose
   .connect(process.env.MONGODB_URL, {
     auth: {
@@ -126,25 +128,17 @@ app.post('/ci', async (req, res) => {
   });
   console.log(`All files moved`);
 
-  const [javaCompileError, javaCompileResult] = await to(
-    java.compileCode(buildPath),
-  );
-  if (javaCompileError) {
-    console.log(javaCompileError);
-  } else {
-    console.log(javaCompileResult);
-    console.log('All Java files compiled');
-  }
+  const compileAndTestOutput = await java.compileAndTest(buildPath, testFiles);
 
-  const [javaTestError, javaTestResult] = await to(
-    java.testCode(buildPath, testFiles),
-  );
-  if (javaCompileError) {
-    console.log(javaCompileError);
-  } else {
-    console.log('All Java tests executed');
-    console.log(javaTestResult);
-  }
+  console.log(compileAndTestOutput);
+
+  /*
+  const build = new Build({
+    commitId,
+    timestamp: new Date(),
+    response: 
+  });
+  */
 
   await status.success('Build success');
   return res.status(202).json({ state: 'success' });
