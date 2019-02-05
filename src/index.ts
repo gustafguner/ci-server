@@ -48,9 +48,6 @@ app.get('/', (req, res) => {
   res.json({ success: true });
 });
 
-const test = path.join(__dirname, '..');
-console.log(test);
-
 app.post('/ci', async (req, res) => {
   if (!process.env.GITHUB_TOKEN) {
     console.log(
