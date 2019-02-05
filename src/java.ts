@@ -2,7 +2,7 @@ import { commands } from './config';
 import * as shell from 'shelljs';
 import to from 'await-to-js';
 
-const lang = commands.java.name;
+const lang = commands.java.fileExtension;
 const compileCommand = commands.java.compile;
 const testCommand = commands.java.test;
 
@@ -11,14 +11,14 @@ const compileCode = async (path: string) => {
     shell.exec(
       `${compileCommand} ${path}/*.${lang}`,
       (code, stdout, stderr) => {
-        if (stderr.length === 0) {
-          resolve({ succes: true, type: 'Compilation', message: stdout });
-        } else {
+        if (stderr.length !== 0) {
           reject({
-            succes: false,
-            type: 'Compilation',
-            message: { stdout, stderr },
+            success: false,
+            type: 'compilation',
+            message: stderr,
           });
+        } else {
+          resolve({ success: true, message: stdout });
         }
       },
     );
@@ -26,8 +26,7 @@ const compileCode = async (path: string) => {
 };
 
 const testCode = async (path: string, testFiles: string[]) => {
-  const testResultsOut: string[] = [];
-  const testResultsErr: string[] = [];
+  const failingTestFiles: string[] = [];
 
   return new Promise((resolve, reject) => {
     shell.cd(path);
@@ -35,15 +34,15 @@ const testCode = async (path: string, testFiles: string[]) => {
     const promises = [];
 
     testFiles.forEach((file, i) => {
-      const promise = new Promise((resolve2, reject2) => {
+      const promise = new Promise((resolveInner, rejectInner) => {
         shell.exec(`${testCommand} ${file}`, (code, stdout, stderr) => {
-          if (stdout.length !== 0) {
-            testResultsOut.push(stdout);
+          const lines = stdout.split('\n');
+          const statusLine = lines[lines.length - 3];
+
+          if (statusLine.substring(0, 2) !== 'OK' || stderr.length !== 0) {
+            failingTestFiles.push(file);
           }
-          if (stderr.length !== 0) {
-            testResultsErr.push(stderr);
-          }
-          resolve2();
+          resolveInner();
         });
       });
       promises.push(promise);
@@ -51,17 +50,24 @@ const testCode = async (path: string, testFiles: string[]) => {
 
     Promise.all(promises)
       .then(() => {
-        if (testResultsErr.length === 0) {
-          resolve({
-            success: true,
-            type: 'Test',
-            message: `${testResultsOut.length}/${testFiles.length} succeded`,
+        if (failingTestFiles.length !== 0) {
+          let message = `Error: ${failingTestFiles.length}/${
+            testFiles.length
+          } test files failed. \n The following tests failed:\n`;
+
+          failingTestFiles.forEach((file) => {
+            message += `${file}\n`;
+          });
+
+          reject({
+            success: false,
+            type: 'test',
+            message,
           });
         } else {
-          reject({
-            succes: false,
-            type: 'Test',
-            message: `${testResultsErr.length}/${testFiles.length} succeded`,
+          resolve({
+            success: true,
+            message: 'All test files succeeded!',
           });
         }
       })

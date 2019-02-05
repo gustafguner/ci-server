@@ -11,8 +11,14 @@ import { GithubStatus } from './status';
 import * as java from './java';
 import * as mongoose from 'mongoose';
 import to from 'await-to-js';
+import * as rimraf from 'rimraf';
 
 import Build from './models/build';
+
+import * as shell from 'shelljs';
+import * as path from 'path';
+
+import { commands } from './config';
 
 mongoose
   .connect(process.env.MONGODB_URL, {
@@ -173,51 +179,57 @@ app.post('/ci', async (req, res) => {
   const config = JSON.parse(rawData);
 
   const buildPath = `${directoryPath}/__build__`;
-  const srcPath = `${directoryPath}/src`;
-  const testPath = `${directoryPath}/test`;
+  const srcPath = `${directoryPath}/${config.path.src}`;
+  const testPath = `${directoryPath}/${config.path.test}`;
 
   if (!fs.existsSync(buildPath)) {
     fs.mkdirSync(buildPath);
   }
 
-  // Keep track of the files' origin
   const srcFiles: string[] = [];
   const testFiles: string[] = [];
 
   await new Promise((resolve, reject) => {
-    glob(`${srcPath}/*.java`, (err, files) => {
-      if (err) {
-        reject();
-      } else {
-        files.forEach((file) => {
-          const fileName = file.split('/').pop();
-          fs.copyFileSync(`${file}`, `${buildPath}/${fileName}`);
-          srcFiles.push(fileName.split('.')[0]);
-        });
-        resolve();
-      }
-    });
+    glob(
+      `${srcPath}/*.${commands[config.language].fileExtension}`,
+      (err, files) => {
+        if (err) {
+          reject();
+        } else {
+          files.forEach((file) => {
+            const fileName = file.split('/').pop();
+            fs.copyFileSync(`${file}`, `${buildPath}/${fileName}`);
+            srcFiles.push(fileName.split('.')[0]);
+          });
+          resolve();
+        }
+      },
+    );
   });
 
   await new Promise((resolve, reject) => {
-    glob(`${testPath}/*.java`, (err, files) => {
-      if (err) {
-        reject();
-      } else {
-        files.forEach((file) => {
-          const fileName = file.split('/').pop();
-          fs.copyFileSync(`${file}`, `${buildPath}/${fileName}`);
-          testFiles.push(fileName.split('.')[0]);
-        });
-        resolve();
-      }
-    });
+    glob(
+      `${testPath}/*.${commands[config.language].fileExtension}`,
+      (err, files) => {
+        if (err) {
+          reject();
+        } else {
+          files.forEach((file) => {
+            const fileName = file.split('/').pop();
+            fs.copyFileSync(`${file}`, `${buildPath}/${fileName}`);
+            testFiles.push(fileName.split('.')[0]);
+          });
+          resolve();
+        }
+      },
+    );
   });
-  console.log(`All files moved`);
 
-  const response = await java.compileAndTest(buildPath, testFiles);
+  let response;
 
-  console.log(response);
+  if (config.language === 'java') {
+    response = await java.compileAndTest(buildPath, testFiles);
+  }
 
   const build = new Build({
     commitId,
@@ -226,6 +238,11 @@ app.post('/ci', async (req, res) => {
   });
 
   const [saveError] = await to(build.save());
+
+  // Remove commitId directory when we are done
+  const rootDir = path.join(__dirname, '..');
+  shell.cd(rootDir);
+  rimraf.sync(directoryPath);
 
   if (saveError) {
     console.log(`Error when saving to database: ${saveError}`);
