@@ -26,9 +26,6 @@ const compileCode = async (path: string) => {
 };
 
 const testCode = async (path: string, testFiles: string[]) => {
-  const testResultsOut: string[] = [];
-  const testResultsErr: string[] = [];
-
   const failingTestFiles: string[] = [];
 
   return new Promise((resolve, reject) => {
