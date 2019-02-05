@@ -11,8 +11,12 @@ import { GithubStatus } from './status';
 import * as java from './java';
 import * as mongoose from 'mongoose';
 import to from 'await-to-js';
+import * as rimraf from 'rimraf';
 
 import Build from './models/build';
+
+import * as shell from 'shelljs';
+import * as path from 'path';
 
 mongoose
   .connect(process.env.MONGODB_URL, {
@@ -43,6 +47,9 @@ app.use(cors());
 app.get('/', (req, res) => {
   res.json({ success: true });
 });
+
+const test = path.join(__dirname, '..');
+console.log(test);
 
 app.post('/ci', async (req, res) => {
   if (!process.env.GITHUB_TOKEN) {
@@ -139,6 +146,11 @@ app.post('/ci', async (req, res) => {
   });
 
   const [saveError] = await to(build.save());
+
+  // Remove commitId directory when we are done
+  const rootDir = path.join(__dirname, '..');
+  shell.cd(rootDir);
+  rimraf.sync(directoryPath);
 
   if (saveError) {
     console.log(`Error when saving to database: ${saveError}`);
