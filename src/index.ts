@@ -13,6 +13,7 @@ dotenv.config();
 import { GithubStatus } from './status';
 import { commands } from './config';
 import * as java from './java';
+import to from 'await-to-js';
 
 const PORT = 3000;
 
@@ -113,11 +114,25 @@ app.post('/ci', async (req, res) => {
   });
   console.log(`All files moved`);
 
-  const javaCompileOutput = await java.compileCode(buildPath);
-  console.log('Java files compiled');
+  const [javaCompileError, javaCompileResult] = await to(
+    java.compileCode(buildPath),
+  );
+  if (javaCompileError) {
+    console.log(javaCompileError);
+  } else {
+    console.log(javaCompileResult);
+    console.log('All Java files compiled');
+  }
 
-  const javaTestOutput = await java.testCode(buildPath, testFiles);
-  console.log('Java tests executed');
+  const [javaTestError, javaTestResult] = await to(
+    java.testCode(buildPath, testFiles),
+  );
+  if (javaCompileError) {
+    console.log(javaCompileError);
+  } else {
+    console.log('All Java tests executed');
+    console.log(javaTestResult);
+  }
 
   await status.success('Build success');
   return res.status(202).json({ state: 'success' });

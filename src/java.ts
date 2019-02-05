@@ -1,22 +1,24 @@
+import { commands } from './config';
 import * as shell from 'shelljs';
 
-const lang = 'java';
-const compileCommand = 'javac';
-const testCommand = 'java org.junit.runner.JUnitCore';
+const lang = commands.java.name;
+const compileCommand = commands.java.compile;
+const testCommand = commands.java.test;
 
 const compileCode = async (path: string) => {
   return new Promise((resolve, reject) => {
     shell.exec(
       `${compileCommand} ${path}/*.${lang}`,
       (code, stdout, stderr) => {
-        if (stderr.length !== 0) {
+        if (stderr.length === 0) {
           resolve({ succes: true, type: 'Compilation', message: stdout });
+        } else {
+          reject({
+            succes: false,
+            type: 'Compilation',
+            message: { stdout, stderr },
+          });
         }
-        reject({
-          succes: false,
-          type: 'Compilation',
-          message: { stdout, stderr },
-        });
       },
     );
   });
@@ -39,18 +41,19 @@ const testCode = async (path: string, testFiles: string[]) => {
       });
     });
 
-    if (testResultsErr.length !== 0) {
+    if (testResultsErr.length === 0) {
+      resolve({
+        success: true,
+        type: 'Test',
+        message: `${testResultsOut.length}/${testFiles.length} succeded`,
+      });
+    } else {
       reject({
         succes: false,
         type: 'Test',
         message: `${testResultsErr.length}/${testFiles.length} succeded`,
       });
     }
-    resolve({
-      success: true,
-      type: 'Test',
-      message: `${testResultsOut.length}/${testFiles.length} succeded`,
-    });
   });
 };
 
