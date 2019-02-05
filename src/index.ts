@@ -12,6 +12,7 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 import { GithubStatus } from './status';
 import { commands } from './config';
+import * as java from './java';
 
 const PORT = 3000;
 
@@ -57,7 +58,6 @@ app.post('/ci', async (req, res) => {
     );
     return res.status(500).json({ state: 'failure' });
   }
-
   const url: string = req.body.repository.clone_url;
   const commitId: string = req.body.head_commit.id;
   const name: string = req.body.repository.name;
@@ -133,38 +133,13 @@ app.post('/ci', async (req, res) => {
       }
     });
   });
-
   console.log(`All files moved`);
 
-  const lang = 'java';
-  const compileCommand = 'javac';
-  const testCommand = 'java org.junit.runner.JUnitCore';
+  const javaCompileOutput = await java.compileCode(buildPath);
+  console.log('Java files compiled');
 
-  // Compile
-  await new Promise((resolve, reject) => {
-    shell.exec(
-      `${compileCommand} ${path.join(__dirname, `../${buildPath}`)}/*.${lang}`,
-      (code, stdout, stderr) => {
-        resolve();
-      },
-    );
-  });
-
-  console.log('All .java files compiled');
-
-  const testResult: string[] = [];
-
-  shell.cd(buildPath);
-
-  testFiles.forEach((file) => {
-    console.log(`Execute for: ${file}`);
-    shell.exec(`${testCommand} ${file}`, (code, stdout, stderr) => {
-      console.log(`Code: ${code}`);
-      console.log(`stdout: ${stdout}`);
-      console.log(`stderr: ${stderr.length}`);
-      testResult.push(stdout);
-    });
-  });
+  const javaTestOutput = await java.testCode(buildPath, testFiles);
+  console.log('Java tests executed');
 
   await status.success('Build success');
   return res.status(202).json({ state: 'success' });
