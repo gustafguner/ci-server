@@ -73,7 +73,7 @@ There should now be a working copy of the repository available on your local mac
 See section [Built With](#built-with) for more details on the tools.
 
 ## How to Run
-The following sections describes how to set up the development environment and how tests on the system can be run. 
+The following sections describe how to set up the development environment and how tests on the system can be run. 
 
 ### Set up
 To be able to start developing, the environment needs to be set up with a working copy of the CI-server available on the local machine (see [Getting Started](#getting-started)). 
@@ -105,7 +105,7 @@ MONGODB_URL=<url>
 MONGODB_USERNAME=<user>
 MONGODB_PASSWORD=<password>
 ```
-where ´url´ is the URI without `<dbuser>:<dbpassword>@`. E.g. `"mongodb://ds055935.mlab.com:55935/example-database"`.
+where `url` is the URI without `<dbuser>:<dbpassword>@`. E.g. `"mongodb://ds055935.mlab.com:55935/example-database"`.
 
 #### Monitor server changes
 To start monitoring changes to the CI-server, please do the following steps:
@@ -142,7 +142,7 @@ Note that the compilation and test execution on the CI-server only works for cer
 
 7. Finish by clicking on the `Add webhook` button.
 
-If everything is working correctly then whenever commit(s) is pushed to the test repository in GitHub, the CI-server should be able to compile the code, execute tests and notify the developer of the results. 
+If everything is working correctly then whenever a commit is pushed to the test repository in GitHub, the CI-server should be able to compile the code, execute tests and notify the developer of the results. 
 
 ### Running Tests
 
