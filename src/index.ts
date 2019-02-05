@@ -44,6 +44,93 @@ app.get('/', (req, res) => {
   res.json({ success: true });
 });
 
+const style = `
+  <style>
+    table {
+      font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol;
+      border-collapse: collapse;
+      width: 100%;
+    }
+
+    td, th {
+      border: 1px solid #dddddd;
+      text-align: left;
+      padding: 8px;
+    }
+
+    .success {
+      background-color: lightgreen;
+    }
+
+    .fail {
+      background-color: lightpink;
+    }
+  </style>`;
+
+app.get('/build/:commitId', async (req, res) => {
+  const commitId = req.params.commitId;
+  const [error, result] = await to(Build.findOne({ commitId }).exec());
+
+  if (error) {
+    console.log('/builds Error: ', error);
+    return res.send('Error fetching builds from database');
+  }
+
+  const message = result.response.message.replace(/\n/g, '<br>');
+  let html = style;
+  html += `<table>
+  <tr>
+    <th>Commit Id</th>
+    <th>Message</th>
+    <th>Success</th>
+    <th>Type</th>
+    <th>Timestamp</th>
+  </tr>
+  <tr>
+    <td>${result.commitId}</td>
+    <td>${result.response.message}</td>
+    <td>${result.response.success}</td>
+    <td>${
+      typeof result.response.type === 'undefined' ? '' : result.response.type
+    }</td>
+    <td>${result.timestamp}</td>
+  </tr>`;
+
+  html += '</table>';
+
+  res.send(html);
+});
+
+app.get('/builds', async (req, res) => {
+  const [error, result] = await to(Build.find({}).exec());
+
+  if (error) {
+    console.log('/builds Error: ', error);
+    return res.send('Error fetching builds from database');
+  }
+  let html = style;
+  html += `
+  <table>
+    <tr>
+      <th>Commit ID</th>
+    </tr>`;
+
+  result.forEach((build, i) => {
+    const trClass = build.response.success ? 'success' : 'fail';
+    html += `
+        <tr class="${trClass}">
+          <td>
+            <a href="./build/${build.commitId}">${build.commitId}</a>
+          </td>
+        </tr>
+      </a>
+    `;
+  });
+
+  html += `</table>`;
+  res.send(html);
+});
+
 app.post('/ci', async (req, res) => {
   if (!process.env.GITHUB_TOKEN) {
     console.log(
