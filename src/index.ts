@@ -3,15 +3,31 @@ import * as bodyParser from 'body-parser';
 import * as cors from 'cors';
 import * as morgan from 'morgan';
 import * as nodegit from 'nodegit';
-import * as path from 'path';
-import * as shell from 'shelljs';
 import * as fs from 'fs';
 import * as glob from 'glob';
-import * as octonode from 'octonode';
 import * as dotenv from 'dotenv';
 dotenv.config();
 import { GithubStatus } from './status';
-import { commands } from './config';
+import * as java from './java';
+import * as mongoose from 'mongoose';
+import to from 'await-to-js';
+
+import Build from './models/build';
+
+mongoose
+  .connect(process.env.MONGODB_URL, {
+    auth: {
+      user: process.env.MONGODB_USERNAME,
+      password: process.env.MONGODB_PASSWORD,
+    },
+  })
+  .then(() => console.log('💻 Successfully connected to MongoDB'))
+  .catch((err) =>
+    console.error(
+      'An error occured when connecting to the MongoDB database: ',
+      err,
+    ),
+  );
 
 const PORT = 3000;
 
@@ -35,7 +51,6 @@ app.post('/ci', async (req, res) => {
     );
     return res.status(500).json({ state: 'failure' });
   }
-
   const url: string = req.body.repository.clone_url;
   const commitId: string = req.body.head_commit.id;
   const name: string = req.body.repository.name;
@@ -111,38 +126,24 @@ app.post('/ci', async (req, res) => {
       }
     });
   });
-
   console.log(`All files moved`);
 
-  const lang = 'java';
-  const compileCommand = 'javac';
-  const testCommand = 'java org.junit.runner.JUnitCore';
+  const response = await java.compileAndTest(buildPath, testFiles);
 
-  // Compile
-  await new Promise((resolve, reject) => {
-    shell.exec(
-      `${compileCommand} ${path.join(__dirname, `../${buildPath}`)}/*.${lang}`,
-      (code, stdout, stderr) => {
-        resolve();
-      },
-    );
+  console.log(response);
+
+  const build = new Build({
+    commitId,
+    timestamp: new Date(),
+    response,
   });
 
-  console.log('All .java files compiled');
+  const [saveError] = await to(build.save());
 
-  const testResult: string[] = [];
-
-  shell.cd(buildPath);
-
-  testFiles.forEach((file) => {
-    console.log(`Execute for: ${file}`);
-    shell.exec(`${testCommand} ${file}`, (code, stdout, stderr) => {
-      console.log(`Code: ${code}`);
-      console.log(`stdout: ${stdout}`);
-      console.log(`stderr: ${stderr.length}`);
-      testResult.push(stdout);
-    });
-  });
+  if (saveError) {
+    console.log(`Error when saving to database: ${saveError}`);
+    return res.status(500).json({ state: 'failure' });
+  }
 
   await status.success('Build success');
   return res.status(202).json({ state: 'success' });
