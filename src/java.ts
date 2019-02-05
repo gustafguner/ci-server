@@ -2,7 +2,7 @@ import { commands } from './config';
 import * as shell from 'shelljs';
 import to from 'await-to-js';
 
-const lang = commands.java.name;
+const lang = commands.java.fileExtension;
 const compileCommand = commands.java.compile;
 const testCommand = commands.java.test;
 
