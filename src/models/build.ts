@@ -1,21 +1,12 @@
-var mongoose = require('mongoose');
+import * as mongoose from 'mongoose';
 
-var Schema = mongoose.Schema;
+import { IBuild } from './interfaces/build';
 
-var BuildSchema = new Schema(
-  {
-    commit_identifier: {type: String, required: true},
-    build_date: {type: Date, required: true},
-    build_log: {type: String, required: true},
-  }
-);
-
-// Virtual for build's URL
-BuildSchema
-.virtual('url')
-.get(function () {
-  return '/build/' + this._id;
+const BuildSchema = new mongoose.Schema({
+  commitId: { type: String, required: true },
+  timestamp: { type: Date, required: true },
+  log: { type: String, required: true },
 });
 
-//Export model
-module.exports = mongoose.model('Build', BuildSchema);
+const Build = mongoose.model<IBuild>('Build', BuildSchema);
+export default Build;
