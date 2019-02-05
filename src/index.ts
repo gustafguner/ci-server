@@ -3,42 +3,32 @@ import * as bodyParser from 'body-parser';
 import * as cors from 'cors';
 import * as morgan from 'morgan';
 import * as nodegit from 'nodegit';
-import * as path from 'path';
-import * as shell from 'shelljs';
 import * as fs from 'fs';
 import * as glob from 'glob';
-import * as octonode from 'octonode';
 import * as dotenv from 'dotenv';
 dotenv.config();
 import { GithubStatus } from './status';
-import { commands } from './config';
 import * as java from './java';
+import * as mongoose from 'mongoose';
+
+mongoose
+  .connect(process.env.MONGODB_URL, {
+    auth: {
+      user: process.env.MONGODB_USERNAME,
+      password: process.env.MONGODB_PASSWORD,
+    },
+  })
+  .then(() => console.log('💻 Successfully connected to MongoDB'))
+  .catch((err) =>
+    console.error(
+      'An error occured when connecting to the MongoDB database: ',
+      err,
+    ),
+  );
 
 const PORT = 3000;
 
 const app = express();
-
-//Set up mongoose connection
-var mongoose = require('mongoose');
-var mongoDB = process.env.DATABASE_URI;
-mongoose.connect(mongoDB);
-mongoose.Promise = global.Promise;
-var db = mongoose.connection;
-db.on('error', console.error.bind(console, 'MongoDB connection error:'));
-
-var Build = require('./models/build');
-
-var newBuild = new Build ({
-    commit_identifier: "this-is-a-commit-hash",
-    build_date: new Date,
-    build_log: "this-is-a-build-log"
-});
-
-newBuild.save(function(err) {
-  if (err) console.log(err);
-  else console.log('Build successfully saved.');
-  setTimeout(() => process.exit(0), 2000);
-});
 
 app.use(morgan('dev'));
 
