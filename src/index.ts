@@ -128,17 +128,22 @@ app.post('/ci', async (req, res) => {
   });
   console.log(`All files moved`);
 
-  const compileAndTestOutput = await java.compileAndTest(buildPath, testFiles);
+  const response = await java.compileAndTest(buildPath, testFiles);
 
-  console.log(compileAndTestOutput);
+  console.log(response);
 
-  /*
   const build = new Build({
     commitId,
     timestamp: new Date(),
-    response: 
+    response,
   });
-  */
+
+  const [saveError] = await to(build.save());
+
+  if (saveError) {
+    console.log(`Error when saving to database: ${saveError}`);
+    return res.status(500).json({ state: 'failure' });
+  }
 
   await status.success('Build success');
   return res.status(202).json({ state: 'success' });

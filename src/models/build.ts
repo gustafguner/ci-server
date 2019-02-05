@@ -11,7 +11,7 @@ const Response = {
 const BuildSchema = new mongoose.Schema({
   commitId: { type: String, required: true },
   timestamp: { type: Date, required: true, default: Date.now() },
-  response: { type: Response, required: true },
+  response: Response,
 });
 
 const Build = mongoose.model<IBuild>('Build', BuildSchema);
