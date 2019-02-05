@@ -3,17 +3,31 @@ import * as bodyParser from 'body-parser';
 import * as cors from 'cors';
 import * as morgan from 'morgan';
 import * as nodegit from 'nodegit';
-import * as path from 'path';
-import * as shell from 'shelljs';
 import * as fs from 'fs';
 import * as glob from 'glob';
-import * as octonode from 'octonode';
 import * as dotenv from 'dotenv';
 dotenv.config();
 import { GithubStatus } from './status';
-import { commands } from './config';
 import * as java from './java';
+import * as mongoose from 'mongoose';
 import to from 'await-to-js';
+
+import Build from './models/build';
+
+mongoose
+  .connect(process.env.MONGODB_URL, {
+    auth: {
+      user: process.env.MONGODB_USERNAME,
+      password: process.env.MONGODB_PASSWORD,
+    },
+  })
+  .then(() => console.log('💻 Successfully connected to MongoDB'))
+  .catch((err) =>
+    console.error(
+      'An error occured when connecting to the MongoDB database: ',
+      err,
+    ),
+  );
 
 const PORT = 3000;
 
@@ -114,24 +128,21 @@ app.post('/ci', async (req, res) => {
   });
   console.log(`All files moved`);
 
-  const [javaCompileError, javaCompileResult] = await to(
-    java.compileCode(buildPath),
-  );
-  if (javaCompileError) {
-    console.log(javaCompileError);
-  } else {
-    console.log(javaCompileResult);
-    console.log('All Java files compiled');
-  }
+  const response = await java.compileAndTest(buildPath, testFiles);
 
-  const [javaTestError, javaTestResult] = await to(
-    java.testCode(buildPath, testFiles),
-  );
-  if (javaCompileError) {
-    console.log(javaCompileError);
-  } else {
-    console.log('All Java tests executed');
-    console.log(javaTestResult);
+  console.log(response);
+
+  const build = new Build({
+    commitId,
+    timestamp: new Date(),
+    response,
+  });
+
+  const [saveError] = await to(build.save());
+
+  if (saveError) {
+    console.log(`Error when saving to database: ${saveError}`);
+    return res.status(500).json({ state: 'failure' });
   }
 
   await status.success('Build success');
