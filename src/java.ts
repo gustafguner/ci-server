@@ -1,57 +1,99 @@
+import { commands } from './config';
 import * as shell from 'shelljs';
+import to from 'await-to-js';
 
-const lang = 'java';
-const compileCommand = 'javac';
-const testCommand = 'java org.junit.runner.JUnitCore';
+const lang = commands.java.fileExtension;
+const compileCommand = commands.java.compile;
+const testCommand = commands.java.test;
 
 const compileCode = async (path: string) => {
   return new Promise((resolve, reject) => {
-    shell.exec(
+      shell.exec(
       `${compileCommand} ${path}/*.${lang}`,
       (code, stdout, stderr) => {
-        if (stdout.length !== 0) {
-          resolve({ success: true, type: 'Compilation', message: stdout });
+        if (stderr.length !== 0) {
+          reject({
+            success: false,
+            type: 'compilation',
+            message: stderr,
+          });
+        } else {
+          resolve({ success: true, message: stdout });
         }
-        reject({
-          success: false,
-          type: 'Compilation',
-          message: { stdout, stderr },
-        });
       },
-    );
+    ); 
   });
 };
 
 const testCode = async (path: string, testFiles: string[]) => {
-  const testResultsOut: string[] = [];
-  const testResultsErr: string[] = [];
+  const failingTestFiles: string[] = [];
 
   return new Promise((resolve, reject) => {
     shell.cd(path);
+
+    const promises = [];
+
     testFiles.forEach((file, i) => {
-      shell.exec(`${testCommand} ${file}`, (code, stdout, stderr) => {
-        if (stderr.length !== 0) {
-          testResultsOut.push(stdout);
-        }
-        if (stderr.length !== 0) {
-          testResultsErr.push(stderr);
-        }
+      const promise = new Promise((resolveInner, rejectInner) => {
+        shell.exec(`${testCommand} ${file}`, (code, stdout, stderr) => {
+          const lines = stdout.split('\n');
+          const statusLine = lines[lines.length - 3];
+
+          if (statusLine.substring(0, 2) !== 'OK' || stderr.length !== 0) {
+            failingTestFiles.push(file);
+          }
+          resolveInner();
+        });
       });
+      promises.push(promise);
     });
 
-    if (testResultsErr.length !== 0) {
-      reject({
-        success: false,
-        type: 'Test',
-        message: `${testResultsErr.length}/${testFiles.length} succeded`,
+    Promise.all(promises)
+      .then(() => {
+        if (failingTestFiles.length !== 0) {
+          let message = `Error: ${failingTestFiles.length}/${
+            testFiles.length
+          } test files failed. \n The following tests failed:\n`;
+
+          failingTestFiles.forEach((file) => {
+            message += `${file}\n`;
+          });
+
+          reject({
+            success: false,
+            type: 'test',
+            message,
+          });
+        } else {
+          resolve({
+            success: true,
+            message: 'All test files succeeded!',
+          });
+        }
+      })
+      .catch(() => {
+        reject();
       });
-    }
-    resolve({
-      successs: true,
-      type: 'Test',
-      message: `${testResultsOut.length}/${testFiles.length} succeded`,
-    });
   });
 };
 
-export { compileCode, testCode };
+const compileAndTest = async (buildPath: string, testFiles: string[]) => {
+  let err;
+  let output;
+
+  [err, output] = await to(compileCode(buildPath));
+
+  if (err) {
+    return err;
+  }
+
+  [err, output] = await to(testCode(buildPath, testFiles));
+
+  if (err) {
+    return err;
+  }
+
+  return output;
+};
+
+export { compileCode, testCode, compileAndTest };
