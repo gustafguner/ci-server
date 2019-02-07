@@ -165,6 +165,9 @@ Note that the compilation and test execution on the CI-server only works for cer
 
 If everything is working correctly then whenever a commit is pushed to the test repository in GitHub, the CI-server should be able to compile the code, execute tests and notify the developer of the results.
 
+### View Build History
+To view the build history either follow the hyperlink in the build status symbol on github, or visit [localhost:3000/builds](localhost:3000/builds).
+
 ### Running Tests
 
 To run the automated tests on the system:
