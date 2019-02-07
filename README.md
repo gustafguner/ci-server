@@ -32,7 +32,7 @@ The repo that uses the CI service should contain a file named `ci-config.json` i
 
 ### Compilation
 
-When the CI-server recieves a POST request information about the GitHub repository responsible for the request is extracted. The server clones the repository, checks out the relevant branch, and looks for source files in the path specified in `ci-config.json`. The compile commands for the specified language is run, if there are any errors the CI-server sends a response with status 400 and information about what went wrong. The errors are detected by checking if standard error was written to. When GitHub recieves the response with 400 it will show a red cross indicating that the build failed.
+When the CI-server recieves a POST request information about the GitHub repository responsible for the request is extracted. The server clones the repository, checks out the relevant branch, and looks for source files in the path specified in `ci-config.json`. The compile commands for the specified language is run, if there are any errors the CI-server sends a response with status 400 and information about what went wrong. The errors are detected by checking if standard error was written to.
 
 Unit tests for the compilation function at the CI-server include tests for compiling:
 
@@ -45,9 +45,11 @@ Unit tests for the compilation function at the CI-server include tests for compi
 ### Test Execution
 
 Description of the implementation and unit tests of the CI server's test execution feature.
+
 ### Notification
 
-Description of the implementation and unit tests of the CI server's notification feature.
+Upon recieving a POST-request sent from GitHub the CI-server sends `status pending`, making the build status on GitHub show as pending. Depending on if the CI-server detected any problems within the project either `status success` or `status failure` will be sent to GitHub. GitHub will update the build status and show the appropriate symbol at the corresponding commit. If an unexpected error occurs at the server `status error` will be sent to GitHub.
+
 
 ## Getting Started
 Please follow the install guides to set up the environment for this system:
@@ -84,6 +86,11 @@ $ git clone https://github.com/gustafguner/fundamentals-lab2.git
 ```
 
 There should now be a working copy of the repository available on your local machine.
+
+### Running Tests
+
+To run the automated tests of the system:
+`yarn test`
 
 ### Prerequisites
 * Node.js version 10.0.0 or greater
@@ -139,7 +146,7 @@ $ yarn watch
 ```
 You should get something like this:
 
-![yarn](https://github.com/gustafguner/fundamentals-lab2/blob/issue/6/yarn-example.png)
+![yarn](https://github.com/gustafguner/fundamentals-lab2/blob/master/yarn-example.png)
 
 2. Create or go into a (test) repository to run the CI-server on and type the following command.
 
@@ -149,7 +156,7 @@ $ ngrok http 3000
 
 You should then see something like this:
 
-![ngrok](https://github.com/gustafguner/fundamentals-lab2/blob/issue/6/ngrok-example.png)
+![ngrok](https://github.com/gustafguner/fundamentals-lab2/blob/master/ngrok-example.png)
 
 Note that the compilation and test execution on the CI-server only works for certain languages and frameworks. See [Description](#description) for more information.
 
@@ -165,9 +172,8 @@ Note that the compilation and test execution on the CI-server only works for cer
 
 If everything is working correctly then whenever a commit is pushed to the test repository in GitHub, the CI-server should be able to compile the code, execute tests and notify the developer of the results.
 
-### Running Tests
-
-Description of how to run the automated tests on the system.
+### View Build History
+To view the build history either follow the hyperlink in the build status symbol on github, visit [localhost:3000/builds](localhost:3000/builds), or visit your corresponding URL e.g. `https://56b3bb3f.ngrok.io/builds`).
 
 ## Built With
 

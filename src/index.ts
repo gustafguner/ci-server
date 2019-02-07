@@ -164,7 +164,7 @@ app.post('/ci', async (req, res) => {
 
   const repo = await nodegit.Repository.open(directoryPath);
 
-  const status = new GithubStatus(fullRepoName, commitId);
+  const status = new GithubStatus(fullRepoName, commitId, req.headers.host);
 
   // Checkout to branch from repository
   await repo
