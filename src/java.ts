@@ -12,7 +12,7 @@ const compileCode = async (path: string) => {
       `${compileCommand} ${path}/*.${lang}`,
       (code, stdout, stderr) => {
         if (stderr.length !== 0) {
-          reject({
+          resolve({
             success: false,
             type: 'compilation',
             message: stderr,
@@ -59,7 +59,7 @@ const testCode = async (path: string, testFiles: string[]) => {
             message += `${file}\n`;
           });
 
-          reject({
+          resolve({
             success: false,
             type: 'test',
             message,
@@ -83,15 +83,11 @@ const compileAndTest = async (buildPath: string, testFiles: string[]) => {
 
   [err, output] = await to(compileCode(buildPath));
 
-  if (err) {
-    return err;
+  if (output.success === false) {
+    return output;
   }
 
   [err, output] = await to(testCode(buildPath, testFiles));
-
-  if (err) {
-    return err;
-  }
 
   return output;
 };
