@@ -139,7 +139,7 @@ $ yarn watch
 ```
 You should get something like this:
 
-![yarn](https://github.com/gustafguner/fundamentals-lab2/blob/issue/6/yarn-example.png)
+![yarn](https://github.com/gustafguner/fundamentals-lab2/blob/master/yarn-example.png)
 
 2. Create or go into a (test) repository to run the CI-server on and type the following command.
 
@@ -149,7 +149,7 @@ $ ngrok http 3000
 
 You should then see something like this:
 
-![ngrok](https://github.com/gustafguner/fundamentals-lab2/blob/issue/6/ngrok-example.png)
+![ngrok](https://github.com/gustafguner/fundamentals-lab2/blob/master/ngrok-example.png)
 
 Note that the compilation and test execution on the CI-server only works for certain languages and frameworks. See [Description](#description) for more information.
 
