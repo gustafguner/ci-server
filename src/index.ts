@@ -79,7 +79,7 @@ const style = `
  * @apiGroup Build
  * @apiDescription Create a HTML representation of a specific build's log and send it to browser for display
  * @apiParam {String} commitId Unique commit ID for a build
- * @apiParam {String} message The response message for a build 
+ * @apiParam {String} message The response message for a build
  * @apiParam {String} success The success response or a build
  * @apiParam {String} type The type of error
  * @apiParam {String} timestamp The timestamp of a build
@@ -128,7 +128,7 @@ app.get('/build/:commitId', async (req, res) => {
  * @apiName getBuilds
  * @apiGroup Build
  * @apiDescription Create a HTML representation of all the build's logs and send it to browser for display
- * @apiParam {String} success The build's success response 
+ * @apiParam {String} success The build's success response
  * @apiParam {String} commitId The build's unique commit ID
  * @apiSuccess (200 OK) {String} response Sends all log information of the builds to display in browser
  * @apiError (500 Internal Server Error) {String} BuildError Returns an error response if it is unable to fetch a build from the database
@@ -174,13 +174,13 @@ app.get('/builds', async (req, res) => {
  * @apiDescription Request compilation and test execution from CI-server for a specific repository.
  * @apiVersion 1.0.0
  * @apiParam {String} commitId A unique commit ID
- * @apiParam {String} url The URL to clone repository 
+ * @apiParam {String} url The URL to clone repository
  * @apiParam {String} name Name of the repository
- * @apiParam {String} fullRepoName Full name of the repository 
+ * @apiParam {String} fullRepoName Full name of the repository
  * @apiParam {String} branchName Name of the repository's branch
  * @apiParam {String} GITHUB_TOKEN The token for a github repository
  * @apiSuccess (202 Accepted) {json} response The server accepts the request if the build was created succesfully. However, it will also accept requests that are missing the `ci-config.json` file or if there are compilation and/or test execution error (the `message` describes what type of error; `test` or `compilation`)
- * @apiSuccessExample {json} Success-Response: 
+ * @apiSuccessExample {json} Success-Response:
  * { state: 'success' }
  * @apiSuccessExample {json} Success-Response:
  * {
