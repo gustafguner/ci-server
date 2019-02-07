@@ -144,6 +144,11 @@ app.post('/ci', async (req, res) => {
     );
     return res.status(500).json({ state: 'failure' });
   }
+
+  if (req.body.zen) {
+    return res.status(202).json({ state: 'success' });
+  }
+
   const url: string = req.body.repository.clone_url;
   const commitId: string = req.body.head_commit.id;
   const name: string = req.body.repository.name;
