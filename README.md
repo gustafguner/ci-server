@@ -4,10 +4,10 @@ Implements a small continuous integration (CI) server that supports compilation 
 
 ## Description
 
-This project focuses on implementing a continuous integration (CI) server that supports three main features: compilation, automated test execution and notification. More specifically, the CI server should be able to compile the commits that were pushed to the server as well as execute any automated tests. Furthermore, the CI server should notify the client of the results by a commit status; possible check statuses are *passing*, *pending* or *failing*. More information on the implementation of these features and how they were tested are covered in the sections below. 
+This project focuses on implementing a continuous integration (CI) server that supports three main features: compilation, automated test execution and notification. More specifically, the CI server should be able to compile the commits that were pushed to the server as well as execute any automated tests. Furthermore, the CI server should notify the client of the results by a commit status; possible check statuses are *passing*, *pending* or *failing*. More information on the implementation of these features and how they were tested are covered in the sections below.
 
-The aim of this project is to master the core of continuous integration by implementing a small CI server, which was an assignment given by the course DD2480 Software Engineering Fundamentals. 
- 
+The aim of this project is to master the core of continuous integration by implementing a small CI server, which was an assignment given by the course DD2480 Software Engineering Fundamentals.
+
 Currently, these are the language(s) that the CI server can compile:
 
 * [Java](https://docs.oracle.com/en/java/)
@@ -18,18 +18,19 @@ Currently, these are the testing framework(s) that the CI server can execute:
 
 ### Compilation
 
-Description of the implementation and unit tests of the CI server's compilation feature.
+The file `ci-config.json` provides the necessary information about the project to the CI-server. The stated language of the project is used to select the correct set of commands run by the CI-server when compiling and running tests.
+
+When the CI-server recieves a POST request information about the GitHub repository responsible for the request is extracted. The server clones the repository, checks out the relevant branch, and looks for source files in the path specified in `ci-config.json`. The compile commands for the specified language is run, if there are any errors the CI-server sends a response with status 400 and information about what went wrong. The errors are detected by checking if standard error was written to. When GitHub recieves the response with 400 it will show a red cross indicating that the build failed.
 
 ### Test Execution
 
 Description of the implementation and unit tests of the CI server's test execution feature.
-
 ### Notification
 
 Description of the implementation and unit tests of the CI server's notification feature.
 
 ## Getting Started
-Please follow the install guides to set up the environment for this system: 
+Please follow the install guides to set up the environment for this system:
 
 * [Node.js](https://nodejs.org/en/download/)
 * [NPM](https://www.npmjs.com/get-npm)
@@ -56,7 +57,7 @@ for macOS:
 $ cd /Users/user/my_project
 ```
 
-and type: 
+and type:
 
 ```shell
 $ git clone https://github.com/gustafguner/fundamentals-lab2.git
@@ -73,10 +74,10 @@ There should now be a working copy of the repository available on your local mac
 See section [Built With](#built-with) for more details on the tools.
 
 ## How to Run
-The following sections describe how to set up the development environment and how tests on the system can be run. 
+The following sections describe how to set up the development environment and how tests on the system can be run.
 
 ### Set up
-To be able to start developing, the environment needs to be set up with a working copy of the CI-server available on the local machine (see [Getting Started](#getting-started)). 
+To be able to start developing, the environment needs to be set up with a working copy of the CI-server available on the local machine (see [Getting Started](#getting-started)).
 
 #### Gain access to Github account
 To allow the CI-server to gain access to your GitHub account a `Personal Access` token must be generated. Please follow these steps to do so:
@@ -136,13 +137,13 @@ Note that the compilation and test execution on the CI-server only works for cer
 
 4. Click on `Settings` > `Webhooks` > `Add webhook`
 
-5. Paste the copied URL in `Payload URL` appended with `/ci` (e.g. `https://56b3bb3f.ngrok.io/ci`). 
+5. Paste the copied URL in `Payload URL` appended with `/ci` (e.g. `https://56b3bb3f.ngrok.io/ci`).
 
 6. In `Content type` choose `application/json`.
 
 7. Finish by clicking on the `Add webhook` button.
 
-If everything is working correctly then whenever a commit is pushed to the test repository in GitHub, the CI-server should be able to compile the code, execute tests and notify the developer of the results. 
+If everything is working correctly then whenever a commit is pushed to the test repository in GitHub, the CI-server should be able to compile the code, execute tests and notify the developer of the results.
 
 ### Running Tests
 
