@@ -8,7 +8,7 @@ const testCommand = commands.java.test;
 
 const compileCode = async (path: string) => {
   return new Promise((resolve, reject) => {
-      shell.exec(
+    shell.exec(
       `${compileCommand} ${path}/*.${lang}`,
       (code, stdout, stderr) => {
         if (stderr.length !== 0) {
@@ -21,28 +21,24 @@ const compileCode = async (path: string) => {
           resolve({ success: true, message: stdout });
         }
       },
-    ); 
+    );
   });
 };
 
 const testCode = async (path: string, testFiles: string[]) => {
   const failingTestFiles: string[] = [];
 
-    const cdPromise = () => {
-      return new Promise((resolve, reject) => {
+  const cdPromise = () => {
+    return new Promise((resolve, reject) => {
       shell.exec('pwd', (code, stdout, stderr) => {
         resolve(stdout);
       });
-      });
-    }
-    const prevCd: string = await cdPromise();
-    console.log(prevCd);
-    console.log(typeof prevCd);
+    });
+  };
+  const [cdErr, cdOut] = await to(cdPromise());
   return new Promise(async (resolve, reject) => {
-    
-
     shell.cd(path);
-    
+
     const promises = [];
 
     testFiles.forEach((file, i) => {
@@ -62,6 +58,7 @@ const testCode = async (path: string, testFiles: string[]) => {
 
     Promise.all(promises)
       .then(() => {
+        shell.cd(cdOut as string);
         if (failingTestFiles.length !== 0) {
           let message = `Error: ${failingTestFiles.length}/${
             testFiles.length
@@ -82,7 +79,6 @@ const testCode = async (path: string, testFiles: string[]) => {
             message: 'All test files succeeded!',
           });
         }
-      shell.cd(prevCd);
       })
       .catch(() => {
         reject();
