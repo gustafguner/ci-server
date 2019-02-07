@@ -121,6 +121,8 @@ app.get('/builds', async (req, res) => {
       <th>Commit ID</th>
     </tr>`;
 
+  result.reverse();
+
   result.forEach((build, i) => {
     const trClass = build.response.success ? 'success' : 'fail';
     html += `
