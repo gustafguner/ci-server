@@ -77,22 +77,18 @@ const style = `
  * @api {get} /build/:commitId Display specific build log
  * @apiName getBuild
  * @apiGroup Build
- * 
  * @apiDescription Create a HTML representation of a specific build's log and send it to browser for display
- * @apiVersion 1.0.0
- * 
  * @apiParam {String} commitId Unique commit ID for a build
  * @apiParam {String} message The response message for a build 
  * @apiParam {String} success The success response or a build
  * @apiParam {String} type The type of error
  * @apiParam {String} timestamp The timestamp of a build
- * 
  * @apiSuccess (200 OK) {String} response Sends specific log information to display in browser
- * 
  * @apiError (500 Internal Server Error) {String} BuildError Returns an error response if it is unable to fetch builds from the database
  * @apiErrorExample {String} Error-Response:
  * Error fetching builds from database
  */
+
 app.get('/build/:commitId', async (req, res) => {
   const commitId = req.params.commitId;
   const [error, result] = await to(Build.findOne({ commitId }).exec());
@@ -131,15 +127,10 @@ app.get('/build/:commitId', async (req, res) => {
  * @api {get} /builds Display log for all builds
  * @apiName getBuilds
  * @apiGroup Build
- * 
  * @apiDescription Create a HTML representation of all the build's logs and send it to browser for display
- * @apiVersion 1.0.0
- * 
  * @apiParam {String} success The build's success response 
  * @apiParam {String} commitId The build's unique commit ID
- * 
  * @apiSuccess (200 OK) {String} response Sends all log information of the builds to display in browser
- * 
  * @apiError (500 Internal Server Error) {String} BuildError Returns an error response if it is unable to fetch a build from the database
  * @apiErrorExample {String} Error-Response:
  * Error fetching builds from database
@@ -180,9 +171,7 @@ app.get('/builds', async (req, res) => {
  * @api {post} /ci Compile and execute test for repository
  * @apiName postCI
  * @apiGroup Server
- * 
  * @apiDescription Request compilation and test execution from CI-server for a specific repository.
- * 
  * @apiVersion 1.0.0
  * @apiParam {String} commitId A unique commit ID
  * @apiParam {String} url The URL to clone repository 
@@ -190,7 +179,6 @@ app.get('/builds', async (req, res) => {
  * @apiParam {String} fullRepoName Full name of the repository 
  * @apiParam {String} branchName Name of the repository's branch
  * @apiParam {String} GITHUB_TOKEN The token for a github repository
- * 
  * @apiSuccess (202 Accepted) {json} response The server accepts the request if the build was created succesfully. However, it will also accept requests that are missing the `ci-config.json` file or if there are compilation and/or test execution error (the `message` describes what type of error; `test` or `compilation`)
  * @apiSuccessExample {json} Success-Response: 
  * { state: 'success' }
@@ -201,11 +189,9 @@ app.get('/builds', async (req, res) => {
  * }
  * @apiSuccessExample {json} Success-Response:
  * { state: 'failure', message: 'Type: test' }
- * 
  * @apiError (500 Internal Server Error) {json} MissingGithubToken GitHub token missing
  * @apiErrorExample {json} Error-Response:
  * { state: 'failure' }
- * 
  * @apiError (500 Internal Server Error) {json} SaveError Error when saving to database
  * @apiErrorExample {json} Error-Response:
  * { state: 'failure', messsage: 'Internal server error' }
