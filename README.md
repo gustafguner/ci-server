@@ -22,6 +22,14 @@ The file `ci-config.json` provides the necessary information about the project t
 
 When the CI-server recieves a POST request information about the GitHub repository responsible for the request is extracted. The server clones the repository, checks out the relevant branch, and looks for source files in the path specified in `ci-config.json`. The compile commands for the specified language is run, if there are any errors the CI-server sends a response with status 400 and information about what went wrong. The errors are detected by checking if standard error was written to. When GitHub recieves the response with 400 it will show a red cross indicating that the build failed.
 
+Unit tests for the compilation function at the CI-server include tests for compiling:
+
+* Correctly formed source files
+* Incorrecly formed source files
+* Correctly formed test files
+* Incorrectly formed test files
+* No files
+
 ### Test Execution
 
 Description of the implementation and unit tests of the CI server's test execution feature.
