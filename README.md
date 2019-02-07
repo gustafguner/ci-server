@@ -48,7 +48,7 @@ Description of the implementation and unit tests of the CI server's test executi
 
 ### Notification
 
-Upon recieving a POST-request sent from GitHub the CI-server sends `status pending`, making the build status on GitHub show as pending. Depending on if the CI-server detected any problems within the project either `status success` or `status error` will be sent to GitHub. GitHub will update the build status and show the appropriate symbol at the corresponding commit.
+Upon recieving a POST-request sent from GitHub the CI-server sends `status pending`, making the build status on GitHub show as pending. Depending on if the CI-server detected any problems within the project either `status success` or `status failure` will be sent to GitHub. GitHub will update the build status and show the appropriate symbol at the corresponding commit. If an unexpected error occurs at the server `status error` will be sent to GitHub.
 
 
 ## Getting Started
