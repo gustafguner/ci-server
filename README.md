@@ -32,7 +32,7 @@ The repo that uses the CI service should contain a file named `ci-config.json` i
 
 ### Compilation
 
-When the CI-server recieves a POST request information about the GitHub repository responsible for the request is extracted. The server clones the repository, checks out the relevant branch, and looks for source files in the path specified in `ci-config.json`. The compile commands for the specified language is run, if there are any errors the CI-server sends a response with status 400 and information about what went wrong. The errors are detected by checking if standard error was written to. When GitHub recieves the response with 400 it will show a red cross indicating that the build failed.
+When the CI-server recieves a POST request information about the GitHub repository responsible for the request is extracted. The server clones the repository, checks out the relevant branch, and looks for source files in the path specified in `ci-config.json`. The compile commands for the specified language is run, if there are any errors the CI-server sends a response with status 400 and information about what went wrong. The errors are detected by checking if standard error was written to.
 
 Unit tests for the compilation function at the CI-server include tests for compiling:
 
@@ -45,9 +45,11 @@ Unit tests for the compilation function at the CI-server include tests for compi
 ### Test Execution
 
 Description of the implementation and unit tests of the CI server's test execution feature.
+
 ### Notification
 
-Description of the implementation and unit tests of the CI server's notification feature.
+Upon recieving a POST-request sent from GitHub the CI-server sends `status pending`, making the build status on GitHub show as pending. Depending on if the CI-server detected any problems within the project either `status success` or `status failure` will be sent to GitHub. GitHub will update the build status and show the appropriate symbol at the corresponding commit. If an unexpected error occurs at the server `status error` will be sent to GitHub.
+
 
 ## Getting Started
 Please follow the install guides to set up the environment for this system:
