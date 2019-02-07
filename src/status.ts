@@ -61,6 +61,7 @@ const sendGithubStatus = (
       {
         state,
         description,
+        target_url: `http://localhost:3000/build/${commitId}`,
       },
       (err, data, headers) => {
         if (err) {
