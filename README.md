@@ -85,6 +85,11 @@ $ git clone https://github.com/gustafguner/fundamentals-lab2.git
 
 There should now be a working copy of the repository available on your local machine.
 
+### Running Tests
+
+To run the automated tests of the system:
+`yarn test`
+
 ### Prerequisites
 * Node.js version 10.0.0 or greater
 * NPM version 5.6.0
@@ -164,11 +169,6 @@ Note that the compilation and test execution on the CI-server only works for cer
 7. Finish by clicking on the `Add webhook` button.
 
 If everything is working correctly then whenever a commit is pushed to the test repository in GitHub, the CI-server should be able to compile the code, execute tests and notify the developer of the results.
-
-### Running Tests
-
-To run the automated tests on the system:
-`yarn test`
 
 ## Built With
 
