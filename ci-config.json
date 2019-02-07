@@ -1,0 +1,7 @@
+{
+  "language": "java",
+  "path": {
+    "src": "dummy-code/src",
+    "test": "dummy-code/test"
+  }
+}
