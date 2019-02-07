@@ -167,7 +167,8 @@ If everything is working correctly then whenever a commit is pushed to the test 
 
 ### Running Tests
 
-Description of how to run the automated tests on the system.
+To run the automated tests on the system:
+`yarn test`
 
 ## Built With
 
