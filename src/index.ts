@@ -224,6 +224,8 @@ app.post('/ci', async (req, res) => {
 
   const repo = await nodegit.Repository.open(directoryPath);
 
+  const status = new GithubStatus(fullRepoName, commitId);
+
   // Checkout to branch from repository
   await repo
     .getBranch(`refs/remotes/origin/${branchName}`)
@@ -232,13 +234,12 @@ app.post('/ci', async (req, res) => {
     });
 
   if (!fs.existsSync(`${directoryPath}/ci-config.json`)) {
+    await status.error('Missing ci-config.json file');
     return res.status(202).json({
       state: 'failure',
       description: 'Cannot find ci-config.json file',
     });
   }
-
-  const status = new GithubStatus(fullRepoName, commitId);
 
   await status.pending('Build pending');
 
@@ -313,7 +314,17 @@ app.post('/ci', async (req, res) => {
 
   if (saveError) {
     console.log(`Error when saving to database: ${saveError}`);
-    return res.status(500).json({ state: 'failure' });
+    await status.error('Internal server error');
+    return res
+      .status(500)
+      .json({ state: 'failure', messsage: 'Internal server error' });
+  }
+
+  if (response.success === false) {
+    await status.failure(`Failure. Type: ${response.type}`);
+    return res
+      .status(202)
+      .json({ state: 'failure', message: `Type: ${response.type}` });
   }
 
   await status.success('Build success');
