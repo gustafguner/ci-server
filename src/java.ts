@@ -28,9 +28,21 @@ const compileCode = async (path: string) => {
 const testCode = async (path: string, testFiles: string[]) => {
   const failingTestFiles: string[] = [];
 
-  return new Promise((resolve, reject) => {
-    shell.cd(path);
+    const cdPromise = () => {
+      return new Promise((resolve, reject) => {
+      shell.exec('pwd', (code, stdout, stderr) => {
+        resolve(stdout);
+      });
+      });
+    }
+    const prevCd: string = await cdPromise();
+    console.log(prevCd);
+    console.log(typeof prevCd);
+  return new Promise(async (resolve, reject) => {
+    
 
+    shell.cd(path);
+    
     const promises = [];
 
     testFiles.forEach((file, i) => {
@@ -70,6 +82,7 @@ const testCode = async (path: string, testFiles: string[]) => {
             message: 'All test files succeeded!',
           });
         }
+      shell.cd(prevCd);
       })
       .catch(() => {
         reject();

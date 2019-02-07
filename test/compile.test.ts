@@ -12,7 +12,6 @@ test('Test unsuccessfull compilationof source code', async () => {
 });
 
 test('Test successfull compilation of test code', async () => {
-  // const result = await java.compileCode("./test/dummy-code/test/");
-  // expect(result.success).toBe(true);
-  // expect(result.type).toBe("Compilation");
+   const result = await java.compileCode("./test/dummy-code/test/");
+   expect(result.success).toBe(true);
 });
