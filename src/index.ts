@@ -84,12 +84,12 @@ const style = `
  * @apiParam {String} commitId Unique commit ID for a build
  * @apiParam {String} message The response message for a build 
  * @apiParam {String} success The success response or a build
- * @apiParam {String} type The build type
+ * @apiParam {String} type The type of error
  * @apiParam {String} timestamp The timestamp of a build
  * 
- * @apiSuccess {String} successResponse Sends specific log information to display in browser
+ * @apiSuccess (200 OK) {String} response Sends specific log information to display in browser
  * 
- * @apiError {String} buildError Returns an error response if it is unable to fetch builds from the database
+ * @apiError (500 Internal Server Error) {String} BuildError Returns an error response if it is unable to fetch builds from the database
  * @apiErrorExample {String} Error-Response:
  * Error fetching builds from database
  */
@@ -138,9 +138,9 @@ app.get('/build/:commitId', async (req, res) => {
  * @apiParam {String} success The build's success response 
  * @apiParam {String} commitId The build's unique commit ID
  * 
- * @apiSuccess {String} successResponse Sends all log information of the builds to display in browser
+ * @apiSuccess (200 OK) {String} response Sends all log information of the builds to display in browser
  * 
- * @apiError {String} errorResponse Returns an error response if it is unable to fetch a build from the database
+ * @apiError (500 Internal Server Error) {String} BuildError Returns an error response if it is unable to fetch a build from the database
  * @apiErrorExample {String} Error-Response:
  * Error fetching builds from database
  */
@@ -189,20 +189,24 @@ app.get('/builds', async (req, res) => {
  * @apiParam {String} branchName Name of the repository's branch
  * @apiParam {String} GITHUB_TOKEN The token for a github repository
  * 
- * @apiSuccess {json} buildSuccess Build was created succesfully
+ * @apiSuccess (202 Accepted) {json} response The server accepts the request if the build was created succesfully. However, it will also accept requests that are missing the `ci-config.json` file or if there are compilation and/or test execution error (the `message` describes what type of error; `test` or `compilation`)
  * @apiSuccessExample {json} Success-Response: 
  * { state: 'success' }
- * 
- * @apiError {json} missingCIFile The `ci-config.json` file was not found
- * @apiErrorExample {json} Error-Response:
+ * @apiSuccessExample {json} Success-Response:
  * {
  *     state: 'failure',
  *     description: 'Cannot find ci-config.json file',
  * }
- * @apiError {json} missingGithubToken GitHub token missing
+ * @apiSuccessExample {json} Success-Response:
+ * { state: 'failure', message: 'Type: test' }
+ * 
+ * @apiError (500 Internal Server Error) {json} MissingGithubToken GitHub token missing
  * @apiErrorExample {json} Error-Response:
  * { state: 'failure' }
- * @apiError {json} saveError Error when saving to database
+ * 
+ * @apiError (500 Internal Server Error) {json} SaveError Error when saving to database
+ * @apiErrorExample {json} Error-Response:
+ * { state: 'failure', messsage: 'Internal server error' }
  */
 app.post('/ci', async (req, res) => {
   if (!process.env.GITHUB_TOKEN) {

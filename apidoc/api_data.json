@@ -36,7 +36,7 @@
             "type": "String",
             "optional": false,
             "field": "type",
-            "description": "<p>The build type</p>"
+            "description": "<p>The type of error</p>"
           },
           {
             "group": "Parameter",
@@ -50,12 +50,12 @@
     },
     "success": {
       "fields": {
-        "Success 200": [
+        "200 OK": [
           {
-            "group": "Success 200",
+            "group": "200 OK",
             "type": "String",
             "optional": false,
-            "field": "successResponse",
+            "field": "response",
             "description": "<p>Sends specific log information to display in browser</p>"
           }
         ]
@@ -63,12 +63,12 @@
     },
     "error": {
       "fields": {
-        "Error 4xx": [
+        "500 Internal Server Error": [
           {
-            "group": "Error 4xx",
+            "group": "500 Internal Server Error",
             "type": "String",
             "optional": false,
-            "field": "buildError",
+            "field": "BuildError",
             "description": "<p>Returns an error response if it is unable to fetch builds from the database</p>"
           }
         ]
@@ -114,12 +114,12 @@
     },
     "success": {
       "fields": {
-        "Success 200": [
+        "200 OK": [
           {
-            "group": "Success 200",
+            "group": "200 OK",
             "type": "String",
             "optional": false,
-            "field": "successResponse",
+            "field": "response",
             "description": "<p>Sends all log information of the builds to display in browser</p>"
           }
         ]
@@ -127,12 +127,12 @@
     },
     "error": {
       "fields": {
-        "Error 4xx": [
+        "500 Internal Server Error": [
           {
-            "group": "Error 4xx",
+            "group": "500 Internal Server Error",
             "type": "String",
             "optional": false,
-            "field": "errorResponse",
+            "field": "BuildError",
             "description": "<p>Returns an error response if it is unable to fetch a build from the database</p>"
           }
         ]
@@ -206,13 +206,13 @@
     },
     "success": {
       "fields": {
-        "Success 200": [
+        "202 Accepted": [
           {
-            "group": "Success 200",
+            "group": "202 Accepted",
             "type": "json",
             "optional": false,
-            "field": "buildSuccess",
-            "description": "<p>Build was created succesfully</p>"
+            "field": "response",
+            "description": "<p>The server accepts the request if the build was created succesfully. However, it will also accept requests that are missing the <code>ci-config.json</code> file or if there are compilation and/or test execution error (the <code>message</code> describes what type of error; <code>test</code> or <code>compilation</code>)</p>"
           }
         ]
       },
@@ -221,31 +221,34 @@
           "title": "Success-Response: ",
           "content": "{ state: 'success' }",
           "type": "json"
+        },
+        {
+          "title": "Success-Response:",
+          "content": "{\n    state: 'failure',\n    description: 'Cannot find ci-config.json file',\n}",
+          "type": "json"
+        },
+        {
+          "title": "Success-Response:",
+          "content": "{ state: 'failure', message: 'Type: test' }",
+          "type": "json"
         }
       ]
     },
     "error": {
       "fields": {
-        "Error 4xx": [
+        "500 Internal Server Error": [
           {
-            "group": "Error 4xx",
+            "group": "500 Internal Server Error",
             "type": "json",
             "optional": false,
-            "field": "missingCIFile",
-            "description": "<p>The <code>ci-config.json</code> file was not found</p>"
-          },
-          {
-            "group": "Error 4xx",
-            "type": "json",
-            "optional": false,
-            "field": "missingGithubToken",
+            "field": "MissingGithubToken",
             "description": "<p>GitHub token missing</p>"
           },
           {
-            "group": "Error 4xx",
+            "group": "500 Internal Server Error",
             "type": "json",
             "optional": false,
-            "field": "saveError",
+            "field": "SaveError",
             "description": "<p>Error when saving to database</p>"
           }
         ]
@@ -253,12 +256,12 @@
       "examples": [
         {
           "title": "Error-Response:",
-          "content": "{\n    state: 'failure',\n    description: 'Cannot find ci-config.json file',\n}",
+          "content": "{ state: 'failure' }",
           "type": "json"
         },
         {
           "title": "Error-Response:",
-          "content": "{ state: 'failure' }",
+          "content": "{ state: 'failure', messsage: 'Internal server error' }",
           "type": "json"
         }
       ]
