@@ -44,13 +44,13 @@ Unit tests for the compilation function at the CI-server include tests for compi
 
 ### Test Execution
 
-Similarly to the [compilation](#compilation) feature, the CI-server will recieve a POST request sent from GitHub. This will prompt the server to clone the repository and check out to the branch in interest. It will then proceed to extract the test files specified in the `ci-config.json` and execute the compile commands for the specified language. If the CI-server finds an error, it will send a status response of `202` with the `message` specifying that it is a `test` error. 
+Similarly to the [compilation](#compilation) feature, the CI-server will recieve a POST request sent from GitHub. This will prompt the server to clone the repository and check out to the branch in interest. It will then proceed to extract the test files specified in the `ci-config.json` and execute the compile commands for the specified language. If the CI-server finds an error, it will send a status response of `202` with the `message` specifying that it is a `test` error.
 
 Unit tests for the test execution feature include testing for:
 
 * Incorrectly formed test files
 * Correctly formed test files
-* Correctly formed test files but failing compilation 
+* Correctly formed test files but failing compilation
 * Incorrectly formed test files with passing compilation
 
 ### Notification
