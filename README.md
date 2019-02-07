@@ -16,9 +16,21 @@ Currently, these are the testing framework(s) that the CI server can execute:
 
 * [JUnit](https://junit.org/junit4/)
 
-### Compilation
+### Configuration
 
-The file `ci-config.json` provides the necessary information about the project to the CI-server. The stated language of the project is used to select the correct set of commands run by the CI-server when compiling and running tests.
+The repo that uses the CI service should contain a file named `ci-config.json` in the root directory. The file provides the necessary information about the project to the CI-server. The stated language of the project is used to select the correct set of commands run by the CI-server when compiling and running tests. It should also specify where the source and test code of the project is located relative to the root directory. Below is an example of a correctly formed `ci-config.json` file.
+
+```
+{
+  "language": "java",
+  "path": {
+    "src": "src",
+    "test": "test"
+  }
+}
+```
+
+### Compilation
 
 When the CI-server recieves a POST request information about the GitHub repository responsible for the request is extracted. The server clones the repository, checks out the relevant branch, and looks for source files in the path specified in `ci-config.json`. The compile commands for the specified language is run, if there are any errors the CI-server sends a response with status 400 and information about what went wrong. The errors are detected by checking if standard error was written to. When GitHub recieves the response with 400 it will show a red cross indicating that the build failed.
 

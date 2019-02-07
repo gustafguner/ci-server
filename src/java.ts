@@ -2,7 +2,7 @@ import { commands } from './config';
 import * as shell from 'shelljs';
 import to from 'await-to-js';
 
-const lang = commands.java.name;
+const lang = commands.java.fileExtension;
 const compileCommand = commands.java.compile;
 const testCommand = commands.java.test;
 
@@ -12,7 +12,7 @@ const compileCode = async (path: string) => {
       `${compileCommand} ${path}/*.${lang}`,
       (code, stdout, stderr) => {
         if (stderr.length !== 0) {
-          reject({
+          resolve({
             success: false,
             type: 'compilation',
             message: stderr,
@@ -28,7 +28,15 @@ const compileCode = async (path: string) => {
 const testCode = async (path: string, testFiles: string[]) => {
   const failingTestFiles: string[] = [];
 
-  return new Promise((resolve, reject) => {
+  const cdPromise = () => {
+    return new Promise((resolve, reject) => {
+      shell.exec('pwd', (code, stdout, stderr) => {
+        resolve(stdout);
+      });
+    });
+  };
+  const [cdErr, cdOut] = await to(cdPromise());
+  return new Promise(async (resolve, reject) => {
     shell.cd(path);
 
     const promises = [];
@@ -50,6 +58,7 @@ const testCode = async (path: string, testFiles: string[]) => {
 
     Promise.all(promises)
       .then(() => {
+        shell.cd(cdOut as string);
         if (failingTestFiles.length !== 0) {
           let message = `Error: ${failingTestFiles.length}/${
             testFiles.length
@@ -59,7 +68,7 @@ const testCode = async (path: string, testFiles: string[]) => {
             message += `${file}\n`;
           });
 
-          reject({
+          resolve({
             success: false,
             type: 'test',
             message,
@@ -83,15 +92,11 @@ const compileAndTest = async (buildPath: string, testFiles: string[]) => {
 
   [err, output] = await to(compileCode(buildPath));
 
-  if (err) {
-    return err;
+  if (output.success === false) {
+    return output;
   }
 
   [err, output] = await to(testCode(buildPath, testFiles));
-
-  if (err) {
-    return err;
-  }
 
   return output;
 };

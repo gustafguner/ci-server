@@ -18,6 +18,8 @@ import Build from './models/build';
 import * as shell from 'shelljs';
 import * as path from 'path';
 
+import { commands } from './config';
+
 mongoose
   .connect(process.env.MONGODB_URL, {
     auth: {
@@ -48,6 +50,93 @@ app.get('/', (req, res) => {
   res.json({ success: true });
 });
 
+const style = `
+  <style>
+    table {
+      font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol;
+      border-collapse: collapse;
+      width: 100%;
+    }
+
+    td, th {
+      border: 1px solid #dddddd;
+      text-align: left;
+      padding: 8px;
+    }
+
+    .success {
+      background-color: lightgreen;
+    }
+
+    .fail {
+      background-color: lightpink;
+    }
+  </style>`;
+
+app.get('/build/:commitId', async (req, res) => {
+  const commitId = req.params.commitId;
+  const [error, result] = await to(Build.findOne({ commitId }).exec());
+
+  if (error) {
+    console.log('/builds Error: ', error);
+    return res.send('Error fetching builds from database');
+  }
+
+  const message = result.response.message.replace(/\n/g, '<br>');
+  let html = style;
+  html += `<table>
+  <tr>
+    <th>Commit Id</th>
+    <th>Message</th>
+    <th>Success</th>
+    <th>Type</th>
+    <th>Timestamp</th>
+  </tr>
+  <tr>
+    <td>${result.commitId}</td>
+    <td>${result.response.message}</td>
+    <td>${result.response.success}</td>
+    <td>${
+      typeof result.response.type === 'undefined' ? '' : result.response.type
+    }</td>
+    <td>${result.timestamp}</td>
+  </tr>`;
+
+  html += '</table>';
+
+  res.send(html);
+});
+
+app.get('/builds', async (req, res) => {
+  const [error, result] = await to(Build.find({}).exec());
+
+  if (error) {
+    console.log('/builds Error: ', error);
+    return res.send('Error fetching builds from database');
+  }
+  let html = style;
+  html += `
+  <table>
+    <tr>
+      <th>Commit ID</th>
+    </tr>`;
+
+  result.forEach((build, i) => {
+    const trClass = build.response.success ? 'success' : 'fail';
+    html += `
+        <tr class="${trClass}">
+          <td>
+            <a href="./build/${build.commitId}">${build.commitId}</a>
+          </td>
+        </tr>
+      </a>
+    `;
+  });
+
+  html += `</table>`;
+  res.send(html);
+});
+
 app.post('/ci', async (req, res) => {
   if (!process.env.GITHUB_TOKEN) {
     console.log(
@@ -68,6 +157,8 @@ app.post('/ci', async (req, res) => {
 
   const repo = await nodegit.Repository.open(directoryPath);
 
+  const status = new GithubStatus(fullRepoName, commitId);
+
   // Checkout to branch from repository
   await repo
     .getBranch(`refs/remotes/origin/${branchName}`)
@@ -76,13 +167,12 @@ app.post('/ci', async (req, res) => {
     });
 
   if (!fs.existsSync(`${directoryPath}/ci-config.json`)) {
+    await status.error('Missing ci-config.json file');
     return res.status(202).json({
       state: 'failure',
       description: 'Cannot find ci-config.json file',
     });
   }
-
-  const status = new GithubStatus(fullRepoName, commitId);
 
   await status.pending('Build pending');
 
@@ -90,51 +180,57 @@ app.post('/ci', async (req, res) => {
   const config = JSON.parse(rawData);
 
   const buildPath = `${directoryPath}/__build__`;
-  const srcPath = `${directoryPath}/src`;
-  const testPath = `${directoryPath}/test`;
+  const srcPath = `${directoryPath}/${config.path.src}`;
+  const testPath = `${directoryPath}/${config.path.test}`;
 
   if (!fs.existsSync(buildPath)) {
     fs.mkdirSync(buildPath);
   }
 
-  // Keep track of the files' origin
   const srcFiles: string[] = [];
   const testFiles: string[] = [];
 
   await new Promise((resolve, reject) => {
-    glob(`${srcPath}/*.java`, (err, files) => {
-      if (err) {
-        reject();
-      } else {
-        files.forEach((file) => {
-          const fileName = file.split('/').pop();
-          fs.copyFileSync(`${file}`, `${buildPath}/${fileName}`);
-          srcFiles.push(fileName.split('.')[0]);
-        });
-        resolve();
-      }
-    });
+    glob(
+      `${srcPath}/*.${commands[config.language].fileExtension}`,
+      (err, files) => {
+        if (err) {
+          reject();
+        } else {
+          files.forEach((file) => {
+            const fileName = file.split('/').pop();
+            fs.copyFileSync(`${file}`, `${buildPath}/${fileName}`);
+            srcFiles.push(fileName.split('.')[0]);
+          });
+          resolve();
+        }
+      },
+    );
   });
 
   await new Promise((resolve, reject) => {
-    glob(`${testPath}/*.java`, (err, files) => {
-      if (err) {
-        reject();
-      } else {
-        files.forEach((file) => {
-          const fileName = file.split('/').pop();
-          fs.copyFileSync(`${file}`, `${buildPath}/${fileName}`);
-          testFiles.push(fileName.split('.')[0]);
-        });
-        resolve();
-      }
-    });
+    glob(
+      `${testPath}/*.${commands[config.language].fileExtension}`,
+      (err, files) => {
+        if (err) {
+          reject();
+        } else {
+          files.forEach((file) => {
+            const fileName = file.split('/').pop();
+            fs.copyFileSync(`${file}`, `${buildPath}/${fileName}`);
+            testFiles.push(fileName.split('.')[0]);
+          });
+          resolve();
+        }
+      },
+    );
   });
-  console.log(`All files moved`);
 
-  const response = await java.compileAndTest(buildPath, testFiles);
+  let response;
 
-  console.log(response);
+  if (config.language === 'java') {
+    response = await java.compileAndTest(buildPath, testFiles);
+  }
 
   const build = new Build({
     commitId,
@@ -151,7 +247,17 @@ app.post('/ci', async (req, res) => {
 
   if (saveError) {
     console.log(`Error when saving to database: ${saveError}`);
-    return res.status(500).json({ state: 'failure' });
+    await status.error('Internal server error');
+    return res
+      .status(500)
+      .json({ state: 'failure', messsage: 'Internal server error' });
+  }
+
+  if (response.success === false) {
+    await status.failure(`Failure. Type: ${response.type}`);
+    return res
+      .status(202)
+      .json({ state: 'failure', message: `Type: ${response.type}` });
   }
 
   await status.success('Build success');
