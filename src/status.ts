@@ -3,10 +3,12 @@ import * as octonode from 'octonode';
 export class GithubStatus {
   private fullRepoName: string;
   private commitId: string;
+  private host: string;
 
-  constructor(fullRepoName: string, commitId: string) {
+  constructor(fullRepoName: string, commitId: string, host: string) {
     this.fullRepoName = fullRepoName;
     this.commitId = commitId;
+    this.host = host;
   }
 
   public pending(description: string) {
@@ -15,6 +17,7 @@ export class GithubStatus {
       description,
       this.fullRepoName,
       this.commitId,
+      this.host,
     );
   }
 
@@ -24,6 +27,7 @@ export class GithubStatus {
       description,
       this.fullRepoName,
       this.commitId,
+      this.host,
     );
   }
 
@@ -33,6 +37,7 @@ export class GithubStatus {
       description,
       this.fullRepoName,
       this.commitId,
+      this.host,
     );
   }
 
@@ -42,6 +47,7 @@ export class GithubStatus {
       description,
       this.fullRepoName,
       this.commitId,
+      this.host,
     );
   }
 }
@@ -51,6 +57,7 @@ const sendGithubStatus = (
   description: string,
   fullRepoName: string,
   commitId: string,
+  host: string,
 ) => {
   const client = octonode.client(process.env.GITHUB_TOKEN);
   const ghrepo = client.repo(fullRepoName);
@@ -61,7 +68,7 @@ const sendGithubStatus = (
       {
         state,
         description,
-        target_url: `http://localhost:3000/build/${commitId}`,
+        target_url: `http://${host}/build/${commitId}`,
       },
       (err, data, headers) => {
         if (err) {
