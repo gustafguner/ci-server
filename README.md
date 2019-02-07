@@ -50,7 +50,7 @@ Unit tests for the test execution feature include testing for:
 
 * Incorrectly formed test files
 * Correctly formed test files
-* Correctly formed test files but failing compilation 
+* Correctly formed test files but failing compilation
 * Incorrectly formed test files with passing compilation
 
 ### Notification
