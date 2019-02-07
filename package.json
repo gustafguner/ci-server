@@ -55,5 +55,9 @@
     "hooks": {
       "pre-commit": "lint-staged"
     }
+  },
+  "apidoc": {
+    "title": "CI Server",
+    "name" : "Continuous Integration Server"
   }
 }
