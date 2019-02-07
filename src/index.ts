@@ -158,6 +158,8 @@ app.get('/builds', async (req, res) => {
       <th>Commit ID</th>
     </tr>`;
 
+  result.reverse();
+
   result.forEach((build, i) => {
     const trClass = build.response.success ? 'success' : 'fail';
     html += `
@@ -215,6 +217,11 @@ app.post('/ci', async (req, res) => {
     );
     return res.status(500).json({ state: 'failure' });
   }
+
+  if (req.body.zen) {
+    return res.status(202).json({ state: 'success' });
+  }
+
   const url: string = req.body.repository.clone_url;
   const commitId: string = req.body.head_commit.id;
   const name: string = req.body.repository.name;
@@ -228,7 +235,7 @@ app.post('/ci', async (req, res) => {
 
   const repo = await nodegit.Repository.open(directoryPath);
 
-  const status = new GithubStatus(fullRepoName, commitId);
+  const status = new GithubStatus(fullRepoName, commitId, req.headers.host);
 
   // Checkout to branch from repository
   await repo
@@ -297,10 +304,12 @@ app.post('/ci', async (req, res) => {
     );
   });
 
-  let response;
+  let response: any = { success: true, message: 'No files exists' };
 
-  if (config.language === 'java') {
-    response = await java.compileAndTest(buildPath, testFiles);
+  if (srcFiles.length > 0 && testFiles.length > 0) {
+    if (config.language === 'java') {
+      response = await java.compileAndTest(buildPath, testFiles);
+    }
   }
 
   const build = new Build({
