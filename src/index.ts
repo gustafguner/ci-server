@@ -226,10 +226,12 @@ app.post('/ci', async (req, res) => {
     );
   });
 
-  let response;
+  let response: any = { success: true, message: 'No files exists' };
 
-  if (config.language === 'java') {
-    response = await java.compileAndTest(buildPath, testFiles);
+  if (srcFiles.length > 0 && testFiles.length > 0) {
+    if (config.language === 'java') {
+      response = await java.compileAndTest(buildPath, testFiles);
+    }
   }
 
   const build = new Build({
