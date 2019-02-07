@@ -165,7 +165,7 @@ app.post('/ci', async (req, res) => {
     });
 
   if (!fs.existsSync(`${directoryPath}/ci-config.json`)) {
-    return res.status(202).json({
+    return res.status(400).json({
       state: 'failure',
       description: 'Cannot find ci-config.json file',
     });
